@@ -917,28 +917,43 @@
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
-    // 2. 核心邏輯：監聽下拉選單的 'change' 事件
+    // 2. 核心邏輯：監聽下拉選單的 'change' 事件 (優化延遲檢查)
     document.addEventListener('DOMContentLoaded', function() {
         var selectElement = document.getElementById('language-select');
         var originalLang = 'zh-TW'; 
+        var isGoogleTranslateReady = false; // 新增狀態標記
 
-        if (!selectElement) return; // 如果找不到選單，則退出
+        if (!selectElement) return;
+
+        // 檢查 Google 翻譯核心函式是否載入成功的函式
+        function checkReadyState() {
+            if (typeof google !== 'undefined' && google.translate && google.translate.translate) {
+                isGoogleTranslateReady = true;
+                console.log("Google Translate Core is READY.");
+            } else {
+                // 如果還沒載入，每 100 毫秒再檢查一次 (直到載入為止)
+                setTimeout(checkReadyState, 100); 
+            }
+        }
+        
+        // 頁面載入後立即開始檢查
+        checkReadyState();
+
 
         selectElement.addEventListener('change', function() {
-            var targetLang = this.value; // 獲取使用者選擇的 value (語言代碼)
+            var targetLang = this.value; 
             
-            // 如果目標語言就是當前語言，則不進行操作
             if (targetLang === originalLang) return; 
 
-            // 核心 Hack 邏輯：檢查 Google 翻譯是否有載入其內部函式
-            if (typeof google !== 'undefined' && google.translate && google.translate.translate) {
-                // 使用 Google 翻譯的內部函式來設定目標語言
+            // 在點擊時，只在確定元件已準備好時才呼叫翻譯
+            if (isGoogleTranslateReady) {
                 google.translate.translate(originalLang, targetLang, function() {
                     console.log('Translation triggered for: ' + targetLang);
                 });
             } else {
+                // 如果仍然未載入，建議稍候或檢查網路
                 console.error("Google translation core function not found. Translation failed.");
-                alert("翻譯元件仍在載入中，請稍候再試。");
+                alert("翻譯元件尚未準備完成，請稍候再試或重新整理頁面。");
             }
         });
     });
@@ -946,6 +961,7 @@
 
 </body>
 </html>
+
 
 
 
