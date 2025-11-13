@@ -420,6 +420,52 @@
 		section[id] {
 			scroll-margin-top: 130px; 
 		}
+		
+/* --- 11. 彈出視窗 (Message Box) --- */
+.modal-backdrop {
+    /* 讓背景遮罩整個畫面 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* 確保它在最上層 */
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 300px; /* 訊息框寬度 */
+    text-align: center;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #333;
+}
+
+#alert-ok-button {
+    padding: 8px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+#alert-ok-button:hover {
+    background-color: #0056b3;
+}
+
         /* --- RWD 樣式結束 --- */
 
     </style>
@@ -591,12 +637,20 @@
                     </div>
             </div>
         </section>
+		
         </main>
+
 
     <footer>
         <p>&copy; 2025 星際諮詢有限公司 (StarReach Consulting Ltd.) 版權所有。</p>
     </footer>
-
+	
+<div id="custom-alert-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <p id="alert-message"></p>
+        <button id="alert-ok-button">確定</button>
+    </div>
+</div>
     <script>
         const STORAGE_KEY = 'starreach_guestbook_comments';
 
@@ -611,13 +665,13 @@
             {
                 id: generateId(), 
                 name: "王先生",
-                date: "2025-11-08",
+                date: "2025-11-01",
                 content: "貴公司的策略顧問沈柏霖先生提供的市場分析非常精闢，讓我們在面對新興市場時更有信心，流程優化建議也立竿見影！"
             },
             {
                 id: generateId(), 
                 name: "李小姐 (XX 科技)",
-                date: "2025-11-01",
+                date: "2025-11-08",
                 content: "感謝倪佟識顧問協助我們重新梳理了內部的管理流程，效率大幅提升。專業且效率極高。"
             }
         ];
@@ -639,6 +693,24 @@
                 <p class="comment-text">「${comment.content}」</p>
             `;
             return commentItem;
+        }
+		
+        // 【新增】自定義訊息框函式，用於替換原生的 alert()
+        function showCustomAlert(message) {
+            const modal = document.getElementById('custom-alert-modal');
+            const msgElement = document.getElementById('alert-message');
+            const okButton = document.getElementById('alert-ok-button');
+            
+            // 設置訊息內容
+            msgElement.textContent = message;
+            
+            // 顯示模態框
+            modal.style.display = 'flex';
+            
+            // 設置按鈕點擊事件，點擊後隱藏模態框
+            okButton.onclick = () => {
+                modal.style.display = 'none';
+            };
         }
 
         // 核心新增函數：處理刪除留言
@@ -770,6 +842,7 @@
 
 </body>
 </html>
+
 
 
 
