@@ -745,9 +745,7 @@
             // 3. 存回 localStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedComments));
 
-            // 4. 重新渲染列表
-            renderComments();
-            showCustomAlert('留言已刪除。'); // 使用自定義 alert
+
         }
 
         // 載入並渲染所有留言 (修正重點在這裡)
@@ -859,6 +857,7 @@
 
 </body>
 </html>
+
 
 
 
