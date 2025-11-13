@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星際諮詢有限公司 (StarReach Consulting Ltd.)</title>
+    <style>
+        /* --- 基本樣式重設 --- */
+        body, h1, h2, h3, p, ul, blockquote {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.6;
+        }
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- 警告：僅供開發者參考 --- */
+        /*
+            開發者請注意：
+            客戶提供的網域 "starreach.com.tw" 與即將推出的遊戲 "StarsReach.com" 高度相似。
+            這可能會導致嚴重的 SEO 和品牌混淆問題。
+            建議在網站上線前與客戶再次確認品牌名稱或網域策略。
+        */
+
+        /* --- 1. 導覽列 (Header & Nav) --- */
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #004a99; /* 專業的藍色調 */
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+        nav li {
+            margin-left: 25px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #004a99;
+        }
+
+        /* --- 2. 主視覺 (Hero Section) --- */
+        .hero {
+            background-color: #003366; /* 深藍色背景 */
+            color: #ffffff;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .hero h1 {
+            font-size: 2.8em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            font-size: 1.2em;
+            color: #cceeff;
+            margin-bottom: 30px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* --- 3. 內容區塊 (Sections) --- */
+        section {
+            background-color: #ffffff;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .section-content {
+            padding: 40px;
+        }
+        .section-content h2 {
+            font-size: 2em;
+            color: #004a99;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* --- 4. 服務項目 (Services) --- */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        .service-item {
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .service-item h3 {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .service-item p {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        /* --- 5. 團隊成員 (Team) - 新增樣式 --- */
+        .team-intro {
+            font-size: 1.1em;
+            color: #555;
+            text-align: center;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .divider {
+            border: 0;
+            height: 1px;
+            background-color: #ddd;
+            margin: 40px 0;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* 手機上堆疊 */
+            gap: 30px;
+        }
+        /* 在較大螢幕上並排 */
+        @media (min-width: 768px) {
+            .team-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+        .team-member {
+            background-color: #fdfdfd;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        .team-member h3 {
+            font-size: 1.4em;
+            color: #004a99;
+            margin-bottom: 8px;
+        }
+        .member-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .team-member ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+        .team-member li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .team-member li strong {
+            color: #111;
+        }
+        .team-member li a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .team-member li a:hover {
+            text-decoration: underline;
+        }
+        .member-desc {
+            font-size: 0.95em;
+            color: #555;
+            margin-bottom: 20px;
+            flex-grow: 1; /* 讓描述區塊填滿空間，使座右銘對齊底部 */
+        }
+        .team-member blockquote {
+            font-size: 1em;
+            font-style: italic;
+            color: #003366;
+            border-left: 3px solid #007bff;
+            padding-left: 15px;
+            margin-top: auto; /* 將座右銘推到底部 */
+        }
+
+        /* --- (!!) 新增照片樣式 --- */
+        .team-member-photo {
+            width: 100%;
+            height: auto;
+            border-radius: 6px; /* 圓角 */
+            margin-bottom: 20px; /* 和下方標題的間距 */
+            object-fit: cover;
+        }
+        /* --- (!!) 新增照片樣式 結束 --- */
+
+        .team-philosophy {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .team-philosophy h3 {
+            font-size: 1.5em;
+            color: #004a99;
+            margin-bottom: 15px;
+        }
+        .team-philosophy blockquote {
+            font-size: 1.2em;
+            font-style: italic;
+            color: #333;
+            line-height: 1.8;
+            border: none;
+            padding: 10px;
+        }
+
+        /* --- 6. 聯絡資訊 (Contact) --- */
+        .contact-info ul {
+            list-style: none;
+            padding-left: 5px;
+        }
+        .contact-info li {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .contact-info li strong {
+            display: inline-block;
+            width: 80px; /* 統一標籤寬度 */
+            color: #004a99;
+        }
+
+        /* --- 7. 頁尾 (Footer) --- */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* --- (!!) 8. 手機版響應式樣式 (RWD) --- */
+        @media (max-width: 767px) {
+            
+            /* 調整容器在手機上的邊距 */
+            .container {
+                padding: 10px;
+            }
+
+            /* 讓導覽列垂直堆疊 */
+            header {
+                flex-direction: column; /* 垂直排列 */
+                align-items: flex-start; /* 靠左對齊 */
+                padding: 15px;
+            }
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+        nav li {
+            margin-left: 25px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #004a99;
+        }
+
+            /* 縮小 Hero 區塊的字體與間距 */
+            .hero {
+                padding: 60px 20px;
+            }
+            .hero h1 {
+                font-size: 2.2em; /* 縮小標題 */
+            }
+            .hero p {
+                font-size: 1.1em;
+            }
+
+            /* 縮小內容區塊的邊距 */
+            .section-content {
+                padding: 30px 20px;
+            }
+            .section-content h2 {
+                font-size: 1.8em; /* 縮小 H2 標題 */
+            }
+
+            /* 讓聯絡資訊的標籤和內容垂直堆疊 */
+        .contact-info ul {
+            list-style: none;
+            padding-left: 2px;
+        }
+        .contact-info li {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .contact-info li strong {
+            display: inline-block;
+            width: 80px; /* 統一標籤寬度 */
+            color: #004a99;
+        }
+        }
+		
+		/* --- 9. 錨點修正 (Anchor Fix) --- */
+		/* 修正當點擊錨點連結時，標題被固定導覽列蓋住的問題 */
+		section[id] {
+			scroll-margin-top: 100px; 
+		}
+		
+        /* --- RWD 樣式結束 --- */
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">✨ 星際諮詢</div>
+        <nav>
+            <ul>
+                <li><a href="#about">關於我們</a></li>
+                <li><a href="#services">核心服務</a></li>
+                <li><a href="#team">團隊成員</a></li> 
+				<li><a href="#contact">聯絡我們</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero" id="home">
+        <h1>「我們不預測未來，我們設計未來。」</h1>
+        <p>星際諮詢有限公司 (StarReach Consulting Ltd.)</p>
+        <a href="#services" class="cta-button">了解更多服務</a>
+    </section>
+
+    <main class="container">
+        <section id="about">
+            <div class="section-content">
+                <h2>關於 StarReach</h2>
+                <p>
+                    創立於 2012 年，星際諮詢是一家提供企業管理、品牌策略與跨國專案顧問服務的公司。我們致力於為客戶提供最精準的市場洞察與可執行的未來策略，協助企業在多變的全球市場中穩健成長。
+                </p>
+            </div>
+        </section>
+
+        <section id="services">
+            <div class="section-content">
+                <h2>核心服務</h2>
+                <div class="services-grid">
+                    <div class="service-item">
+                        <h3>企業管理顧問</h3>
+                        <p>（服務說明：例如組織架構優化、營運流程再造、績效管理系統導入等。）</p>
+                    </div>
+                    <div class="service-item">
+                        <h3>品牌策略規劃</h3>
+                        <p>（服務說明：例如市場定位、品牌識別設計、整合行銷傳播、數位轉型策略等。）</p>
+                    </div>
+                    <div class="service-item">
+                        <h3>跨國專案顧問</h3>
+                        <p>（服務說明：例如海外市場進入策略、跨國併購整合、供應鏈管理、國際法規諮詢等。）</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="team">
+            <div class="section-content">
+                <h2>團隊成員 | Our People</h2>
+                <p class="team-intro">
+                    在星際諮詢，我們相信每一位顧問的觀點，都能為複雜問題找到不同解答。<br>
+                    三位成員各具鮮明個性與專業領域，他們的存在本身，就是這間公司的縮影。
+                </p>
+                <hr class="divider">
+                <div class="team-grid">
+                    <div class="team-member">
+                        <img src="倪佟識.jpg" alt="倪佟識" class="team-member-photo">
+                        <h3>👔 倪佟識 NÍ, Tong-shih</h3>
+                        <p class="member-title">資深顧問 / Senior Consultant</p>
+                        <ul>
+                            <li><strong>📍 專長領域：</strong>企業流程分析、內部管理制度優化、組織溝通策略</li>
+                            <li><strong>🎓 學歷：</strong>政治大學企業管理研究所</li>
+                            <li><strong>📧 聯絡信箱：</strong><a href="mailto:tony.ni@starreach.com.tw">tony.ni@starreach.com.tw</a></li>
+                        </ul>
+                        <p class="member-desc">
+                            具十餘年顧問與專案管理經驗，擅長從流程中發現結構問題。
+                            對內部效率、報告架構與決策節奏有獨到見解，常以犀利的觀點指出盲點。
+                            他的同事形容他「反應極快、邏輯精準、偶爾過於直接」，但成果往往不容質疑。
+                        </p>
+                        <blockquote>💬 個人座右銘：「真正的問題從來不在我這裡。」</blockquote>
+                    </div>
+
+                    <div class="team-member">
+                        <img src="沈柏霖.png" alt="沈柏霖" class="team-member-photo">
+                        <h3>📊 沈柏霖 SHEN, Po-lin</h3>
+                        <p class="member-title">策略顧問 / Strategy Consultant</p>
+                        <ul>
+                            <li><strong>📍 專長領域：</strong>市場結構研究、財務建模、企業策略分析</li>
+                            <li><strong>🎓 學歷：</strong>倫敦政經學院（LSE）管理碩士</li>
+                            <li><strong>📧 聯絡信箱：</strong><a href="mailto:polin.shen@starreach.com.tw">polin.shen@starreach.com.tw</a></li>
+                        </ul>
+                        <p class="member-desc">
+                            以冷靜與精準著稱，是團隊中最理性、最少情緒的分析師。
+                            對數據與邏輯結構有近乎強迫的完美主義，任何推論都需有依據。
+                            他話不多，卻能在一句評論裡讓整個會議靜默。
+                        </p>
+                        <blockquote>💬 個人座右銘：「事實不會說謊，除非你沒讀懂它。」</blockquote>
+                    </div>
+
+                    <div class="team-member">
+                        <img src="林子維.png" alt="林子維" class="team-member-photo">
+                        <h3>🧾 林子維 LIN, Tzu-wei</h3>
+                        <p class="member-title">專案助理 / Project Associate</p>
+                        <ul>
+                            <li><strong>📍 專長領域：</strong>專案文件管理、會議紀錄、部門協調支援</li>
+                            <li><strong>🎓 學歷：</strong>淡江大學公共行政系</li>
+                            <li><strong>📧 聯絡信箱：</strong><a href="mailto:wei.lin@starreach.com.tw">wei.lin@starreach.com.tw</a></li>
+                        </ul>
+                        <p class="member-desc">
+                            新進成員，細心負責，具備高度學習能力。
+                            主要負責資料整合與跨部門溝通，協助顧問完成各類文件與簡報。
+                            以謙和、穩定的態度深受客戶與同事信任，是團隊運作中不可或缺的橋樑。
+                        </p>
+                        <blockquote>💬 個人座右銘：「沒有人是一開始就懂的。」</blockquote>
+                    </div>
+                </div>
+                
+                <hr class="divider">
+
+                <div class="team-philosophy">
+                    <h3>🪞 團隊理念 | Team Philosophy</h3>
+                    <blockquote>
+                        我們相信「顧問」不只是給答案的人，<br>
+                        而是能在混亂中看見邏輯、<br>
+                        在組織的縫隙間找到平衡的人。
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <div class="section-content">
+                <h2>聯絡我們</h2>
+                <div class="contact-info">
+                    <ul>
+                        <li><strong>📍 地址</strong>：110 台北市信義區松仁路178號15樓</li>
+                        <li><strong>📞 電話</strong>：(02) 8787-0923</li>
+                        <li><strong>📠 傳真</strong>：(02) 8787-0931</li>
+                        <li><strong>📧 電郵</strong>：<a href="mailto:contact@starreach.com.tw">contact@starreach.com.tw</a></li>
+                        <li><strong>🌐 網站</strong>：<a href="https://starreach-consulting-tw.netlify.app" target="_blank">https://starreach-consulting-tw</a></li>
+                    </ul>
+                </div>
+                </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 星際諮詢有限公司 (StarReach Consulting Ltd.) 版權所有。</p>
+    </footer>
+
+</body>
+</html>
