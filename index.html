@@ -473,25 +473,21 @@
 #custom-language-selector {
     position: fixed; /* 固定在左上角 (根據您的先前需求) */
     top: 10px;       
-    right: 10px;      
+    left: 10px;      
     z-index: 9999;
-    background: white; /* 讓選單在滾動時不遮擋內容 */
+    background: white; 
     padding: 8px 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-#custom-language-selector a {
-    text-decoration: none;
-    margin: 0 5px;
-    padding: 3px 5px;
-    font-weight: bold;
-    color: #333;
-    display: inline-block;
-}
-
-#custom-language-selector a:hover {
-    color: #007bff;
+/* 調整下拉選單樣式 */
+#language-select {
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
         /* --- RWD 樣式結束 --- */
@@ -682,19 +678,20 @@
 </div>
 
 <div id="custom-language-selector">
-    <a href="#" class="lang-switch-link" data-lang="zh-TW">中文 (繁體)</a> |
-    <a href="#" class="lang-switch-link" data-lang="zh-CN">中文 (简体)</a> |
-    <a href="#" class="lang-switch-link" data-lang="ja">日本語</a> |
-    <a href="#" class="lang-switch-link" data-lang="ko">한국어</a> |
-    <a href="#" class="lang-switch-link" data-lang="en">English</a> |
-    <a href="#" class="lang-switch-link" data-lang="th">ภาษาไทย</a> |
-    <a href="#" class="lang-switch-link" data-lang="es">Español</a> |
-    <a href="#" class="lang-switch-link" data-lang="fr">Français</a> |
-    <a href="#" class="lang-switch-link" data-lang="it">Italiano</a>
+    <select id="language-select">
+        <option value="zh-TW">中文 (繁體)</option>
+        <option value="zh-CN">中文 (简体)</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+        <option value="th">ภาษาไทย</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+    </select>
 </div>
 
 <div id="google_translate_element"></div>
-
 
     <script>
         const STORAGE_KEY = 'starreach_guestbook_comments';
@@ -904,12 +901,11 @@
     </script>
 
 <script type="text/javascript">
-    // 1. Google 翻譯初始化函式
+    // 1. Google 翻譯初始化函式 (不變)
     function googleTranslateElementInit() {
       new google.translate.TranslateElement(
         {
-          pageLanguage: 'zh-TW', // 網站原始語言
-          // 加入您自訂選單中所有語言的代碼
+          pageLanguage: 'zh-TW', 
           includedLanguages: 'zh-TW,zh-CN,ja,ko,en,th,es,fr,it', 
           layout: google.translate.TranslateElement.InlineLayout.SIMPLE, 
           autoDisplay: false
@@ -921,34 +917,36 @@
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
-    // 2. 核心邏輯：透過程式碼觸發翻譯 (Hack)
+    // 2. 核心邏輯：監聽下拉選單的 'change' 事件
     document.addEventListener('DOMContentLoaded', function() {
-        var links = document.querySelectorAll('.lang-switch-link');
-        var originalLang = 'zh-TW'; // 原始語言代碼
+        var selectElement = document.getElementById('language-select');
+        var originalLang = 'zh-TW'; 
 
-        links.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                var targetLang = this.getAttribute('data-lang');
-                
-                // 檢查 Google 翻譯是否有載入其內部函式
-                if (typeof google !== 'undefined' && google.translate && google.translate.translate) {
-                    // 使用 Google 翻譯的內部函式來設定目標語言 ('原始語言|目標語言')
-                    google.translate.translate(originalLang, targetLang, function() {
-                        console.log('Translation triggered for: ' + targetLang);
-                    });
-                } else {
-                    // 警告：如果核心函式未載入，可能需要更複雜的 DOM 操控或重新載入頁面
-                    console.error("Google translation core function not found. Translation failed.");
-                    alert("翻譯元件仍在載入中，請稍候再試。");
-                }
-            });
+        if (!selectElement) return; // 如果找不到選單，則退出
+
+        selectElement.addEventListener('change', function() {
+            var targetLang = this.value; // 獲取使用者選擇的 value (語言代碼)
+            
+            // 如果目標語言就是當前語言，則不進行操作
+            if (targetLang === originalLang) return; 
+
+            // 核心 Hack 邏輯：檢查 Google 翻譯是否有載入其內部函式
+            if (typeof google !== 'undefined' && google.translate && google.translate.translate) {
+                // 使用 Google 翻譯的內部函式來設定目標語言
+                google.translate.translate(originalLang, targetLang, function() {
+                    console.log('Translation triggered for: ' + targetLang);
+                });
+            } else {
+                console.error("Google translation core function not found. Translation failed.");
+                alert("翻譯元件仍在載入中，請稍候再試。");
+            }
         });
     });
 </script>
 
 </body>
 </html>
+
 
 
 
