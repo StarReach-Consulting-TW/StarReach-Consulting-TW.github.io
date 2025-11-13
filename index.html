@@ -745,6 +745,9 @@
             // 3. 存回 localStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedComments));
 
+			// 4. 重新渲染列表
+            renderComments();
+
 
         }
 
@@ -857,6 +860,7 @@
 
 </body>
 </html>
+
 
 
 
