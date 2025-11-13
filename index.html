@@ -457,10 +457,23 @@
 #alert-ok-button:hover {
     background-color: #0056b3;
 }
-/* 假設您想讓它在導航列靠右顯示 */
+
 #google_translate_element {
-    float: right;
-    margin-left: 15px; /* 增加與左側元素的間距 */
+    /* 1. 關鍵屬性：讓元素固定在瀏覽器視窗上，不隨滾動條移動 */
+    position: fixed; 
+
+    /* 2. 定位：距離瀏覽器頂部和左側邊緣 10 像素 */
+    top: 10px;       
+    left: 10px;      
+
+    /* 3. 層次：確保翻譯選單顯示在所有其他網頁內容之上 */
+    z-index: 9999;   
+
+    /* 4. 可選：設定背景以防與下方內容文字重疊 */
+    background-color: #fff; 
+    padding: 5px;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
         /* --- RWD 樣式結束 --- */
@@ -876,6 +889,7 @@
 
 </body>
 </html>
+
 
 
 
