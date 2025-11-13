@@ -938,15 +938,17 @@ html.translated-rm-topbar body {
         renderComments();
         formElement.addEventListener('submit', handleFormSubmit);
 			
-			commentListElement.addEventListener('click', (event) => {
-            const target = event.target;
+		commentListElement.addEventListener('click', (event) => {
             
-            // 檢查被點擊的元素是否包含 'delete-button' 類名
-            if (target.classList.contains('delete-button')) {
-                const idToDelete = target.dataset.id;
+            // 1. 尋找被點擊元素最近的父級 .delete-button 元素
+            const deleteButton = event.target.closest('.delete-button');
+            
+            if (deleteButton) {
+                // 2. 如果找到了，就從該按鈕上取得 ID
+                const idToDelete = deleteButton.dataset.id;
                 deleteComment(idToDelete);
             }
-			});
+        });
 				
             } else {
                 // 瀏覽器不支援 localStorage 時的提示
@@ -1027,6 +1029,7 @@ html.translated-rm-topbar body {
 
 </body>
 </html>
+
 
 
 
