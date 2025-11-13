@@ -258,8 +258,60 @@
             width: 80px; /* 統一標籤寬度 */
             color: #004a99;
         }
+        /* --- 7. 留言板 (Guestbook) - 新增樣式 --- */
+        .guestbook-form {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fcfcfc;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #004a99;
+            margin-bottom: 5px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+            font-size: 1em;
+        }
+        .guestbook-form .cta-button {
+            float: right;
+            margin-top: 10px;
+        }
+        .comment-list {
+            margin-top: 20px;
+        }
+        .comment-item {
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .comment-meta {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .comment-text {
+            font-style: italic;
+            color: #333;
+        }
 
-        /* --- 7. 頁尾 (Footer) --- */
+
+        /* --- 8. 頁尾 (Footer) --- */
         footer {
             text-align: center;
             padding: 30px;
@@ -342,6 +394,13 @@
 			scroll-margin-top: 100px; 
 		}
 		
+            /* 清除留言板送出按鈕的浮動效果 */
+            .guestbook-form .cta-button {
+                float: none;
+                width: 100%; /* 讓按鈕在手機上佔滿寬度 */
+                text-align: center;
+            }
+        }
         /* --- RWD 樣式結束 --- */
 
     </style>
@@ -356,6 +415,7 @@
                 <li><a href="#services">核心服務</a></li>
                 <li><a href="#team">團隊成員</a></li> 
 				<li><a href="#contact">聯絡我們</a></li>
+				<li><a href="#guestbook">留言板</a></li>
             </ul>
         </nav>
     </header>
@@ -481,10 +541,42 @@
                         <li><strong>📧 電郵</strong>：<a href="mailto:contact@starreach.com.tw">contact@starreach.com.tw</a></li>
                         <li><strong>🌐 網站</strong>：<a href="https://starreach-consulting-tw.github.io/" target="_blank">https://starreach-consulting-tw</a></li>
                     </ul>
+        <section id="guestbook">
+            <div class="section-content">
+                <h2>客戶留言板 | Guestbook</h2>
+                <form class="guestbook-form">
+                    <p>感謝您的意見，您的留言將有助於我們提升服務品質。</p>
+                    <div class="form-group">
+                        <label for="comment-name">您的稱謂 (必填)</label>
+                        <input type="text" id="comment-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment-email">電子郵件 (選填，不會公開)</label>
+                        <input type="email" id="comment-email" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="comment-content">留言內容 (必填)</label>
+                        <textarea id="comment-content" name="content" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="cta-button">送出留言</button>
+                    <div style="clear: both;"></div> </form>
+
+                <hr class="divider">
+
+                <h3>近期客戶回饋 (範例)</h3>
+                <div class="comment-list">
+                    <div class="comment-item">
+                        <p class="comment-meta"><strong>王先生</strong> 於 2024-11-12 留言</p>
+                        <p class="comment-text">「貴公司的策略顧問沈柏霖先生提供的市場分析非常精闢，讓我們在面對新興市場時更有信心，流程優化建議也立竿見影！」</p>
+                    </div>
+                    <div class="comment-item">
+                        <p class="comment-meta"><strong>李小姐 (XX 科技)</strong> 於 2024-11-01 留言</p>
+                        <p class="comment-text">「感謝倪佟識顧問協助我們重新梳理了內部的管理流程，效率大幅提升。專業且效率極高。」</p>
+                    </div>
                 </div>
-                </div>
+            </div>
         </section>
-    </main>
+        </main>
 
     <footer>
         <p>&copy; 2025 星際諮詢有限公司 (StarReach Consulting Ltd.) 版權所有。</p>
@@ -493,6 +585,7 @@
 </body>
 
 </html>
+
 
 
 
