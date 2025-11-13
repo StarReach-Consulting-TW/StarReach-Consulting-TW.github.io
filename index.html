@@ -900,8 +900,10 @@
         });
     </script>
 
+// ==========================================================
+// 1. Google 翻譯初始化函式 (必須)
+// ==========================================================
 <script type="text/javascript">
-    // 1. Google 翻譯初始化函式 (不變)
     function googleTranslateElementInit() {
       new google.translate.TranslateElement(
         {
@@ -917,50 +919,63 @@
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
-    // 2. 核心邏輯：監聽下拉選單的 'change' 事件 (優化延遲檢查)
-    document.addEventListener('DOMContentLoaded', function() {
-        var selectElement = document.getElementById('language-select');
-        var originalLang = 'zh-TW'; 
-        var isGoogleTranslateReady = false; // 新增狀態標記
+    // 定義一個外部函式 doGTranslate，Google 翻譯工具的程式碼會在背景中呼叫它
+    // 這是讓自訂選單與隱藏的 Google 翻譯元件互動的關鍵
+    function doGTranslate(lang_pair) {
+        // 如果傳入的語言對是 'zh-TW|zh-TW' (原始語言)，則直接退出
+        if (lang_pair.includes('|zh-TW') && lang_pair.includes('zh-TW|')) return;
 
-        if (!selectElement) return;
-
-        // 檢查 Google 翻譯核心函式是否載入成功的函式
-        function checkReadyState() {
-            if (typeof google !== 'undefined' && google.translate && google.translate.translate) {
-                isGoogleTranslateReady = true;
-                console.log("Google Translate Core is READY.");
-            } else {
-                // 如果還沒載入，每 100 毫秒再檢查一次 (直到載入為止)
-                setTimeout(checkReadyState, 100); 
+        var split = lang_pair.split('|');
+        var targetLangCode = split[1]; // 取得目標語言代碼
+        
+        // 嘗試找到 iFrame 內的 select 元素
+        var frame = document.getElementById('google_translate_element').getElementsByTagName('iframe')[0];
+        
+        if (frame) {
+            // 由於 Same-Origin Policy，直接存取 iFrame 內容可能會失敗，
+            // 但如果 Google 的 JS 已經準備好，它會暴露一個處理函式。
+            // 這裡我們假設 Google 的 JS 已經在全域範圍內建立了一個隱藏的 Select 元件
+            try {
+                var select = frame.contentWindow.document.getElementsByTagName('select')[0];
+                if (select) {
+                    select.value = targetLangCode;
+                    // 模擬 change 事件來觸發翻譯
+                    select.dispatchEvent(new Event('change')); 
+                    return;
+                }
+            } catch(e) {
+                // 如果因安全性限制無法存取 iFrame (最常見的情況)
+                console.warn("Same-Origin Policy blocked iFrame access. Using URL Hash fallback.");
             }
         }
         
-        // 頁面載入後立即開始檢查
-        checkReadyState();
+        // 備用方案：如果無法存取 select，則手動改變 URL 的 Hash，讓 Google 翻譯元件自行偵測
+        window.location.hash = '#googtrans(' + lang_pair + ')';
+        window.location.reload(); 
+    }
 
+
+    // 3. 核心邏輯：監聽下拉選單的 'change' 事件
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectElement = document.getElementById('language-select');
+        var originalLang = 'zh-TW'; 
+
+        if (!selectElement) return;
 
         selectElement.addEventListener('change', function() {
             var targetLang = this.value; 
             
-            if (targetLang === originalLang) return; 
-
-            // 在點擊時，只在確定元件已準備好時才呼叫翻譯
-            if (isGoogleTranslateReady) {
-                google.translate.translate(originalLang, targetLang, function() {
-                    console.log('Translation triggered for: ' + targetLang);
-                });
-            } else {
-                // 如果仍然未載入，建議稍候或檢查網路
-                console.error("Google translation core function not found. Translation failed.");
-                alert("翻譯元件尚未準備完成，請稍候再試或重新整理頁面。");
-            }
+            // 核心變動：直接呼叫 doGTranslate
+            // 格式為 '原始語言|目標語言'
+            doGTranslate(originalLang + '|' + targetLang);
         });
     });
 </script>
 
+
 </body>
 </html>
+
 
 
 
