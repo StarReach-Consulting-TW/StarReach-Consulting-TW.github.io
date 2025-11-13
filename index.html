@@ -472,13 +472,11 @@
 /* 自訂選單樣式，確保文字不會太過擁擠 */
 #custom-language-selector {
     position: static;
-	top: auto;
-	right: auto;
-    background: white; 
-    margin: 0;
-	padding: 0;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-right: 25px;
+    background: none; 
+    padding: 0;
+    border-radius: 0;
+    box-shadow: 0;
 }
 
 /* 調整下拉選單樣式 */
@@ -497,10 +495,10 @@
 <body>
 
     <header>
+	    <div style="display: flex; align-items: center;">
         <div class="logo">✨ 星睿顧問 ✨</div>
-	
-	<div style="display: flex; align-items: center;">
-        <div id="custom-language-selector">
+
+	<div id="custom-language-selector">
             <select id="language-select">
                 <option value="zh-TW">中文 (繁體)</option>
                 <option value="zh-CN">中文 (简体)</option>
@@ -526,8 +524,6 @@
 				<li><a href="#guestbook">留言板</a></li>
             </ul>
         </nav>
-		
-
     </header>
 
     <section class="hero" id="home">
@@ -977,12 +973,6 @@
 
 </body>
 </html>
-
-
-
-
-
-
 
 
 
