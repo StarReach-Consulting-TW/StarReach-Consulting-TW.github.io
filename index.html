@@ -597,116 +597,6 @@
         <p>&copy; 2025 星際諮詢有限公司 (StarReach Consulting Ltd.) 版權所有。</p>
     </footer>
 
-    <script>
-        const STORAGE_KEY = 'starreach_guestbook_comments';
-
-        // 初始範例留言 (如果 localStorage 中沒有任何資料，則會載入這些)
-        const initialComments = [
-            {
-                name: "王先生",
-                date: "2025-11-12",
-                content: "貴公司的策略顧問沈柏霖先生提供的市場分析非常精闢，讓我們在面對新興市場時更有信心，流程優化建議也立竿見影！"
-            },
-            {
-                name: "李小姐 (XX 科技)",
-                date: "2025-11-01",
-                content: "感謝倪佟識顧問協助我們重新梳理了內部的管理流程，效率大幅提升。專業且效率極高。"
-            }
-        ];
-
-        const commentListElement = document.getElementById('commentList');
-        const formElement = document.getElementById('guestbookForm');
-
-        // 渲染單條留言的 HTML
-        function createCommentElement(comment) {
-            const commentItem = document.createElement('div');
-            commentItem.className = 'comment-item';
-            commentItem.innerHTML = `
-                <p class="comment-meta"><strong>${comment.name}</strong> 於 ${comment.date} 留言</p>
-                <p class="comment-text">「${comment.content}」</p>
-            `;
-            return commentItem;
-        }
-
-        // 載入並渲染所有留言
-        function renderComments() {
-            let comments;
-            try {
-                comments = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            } catch (e) {
-                comments = null;
-            }
-            
-
-            if (!comments || comments.length === 0) {
-                // 如果 localStorage 中沒有資料，則使用初始範例並存入
-                comments = initialComments;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
-            }
-
-            // 清空現有列表
-            commentListElement.innerHTML = '';
-
-            // 從最新留言開始顯示 (反轉陣列並迭代)
-            comments.slice().reverse().forEach(comment => {
-                commentListElement.appendChild(createCommentElement(comment));
-            });
-        }
-
-        // 處理表單提交
-        function handleFormSubmit(event) {
-            event.preventDefault(); // 阻止表單預設提交 (即網頁刷新)
-
-            const nameInput = document.getElementById('comment-name');
-            const contentInput = document.getElementById('comment-content');
-            
-            // 驗證必填欄位
-            if (!nameInput.value || !contentInput.value) {
-                alert('請填寫稱謂和留言內容！');
-                return;
-            }
-
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-
-            const newComment = {
-                name: nameInput.value,
-                date: `${year}-${month}-${day}`, // YYYY-MM-DD 格式
-                content: contentInput.value
-            };
-
-            // 從 localStorage 取得現有留言，若無則為空陣列
-            let comments = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
-            // 新增留言並存回 localStorage
-            comments.push(newComment);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
-
-            // 重新渲染列表
-            renderComments();
-
-            // 清空表單
-            nameInput.value = '';
-            contentInput.value = '';
-            document.getElementById('comment-email').value = ''; 
-            
-            // 給予使用者反饋
-            alert('留言成功送出！');
-        }
-
-        // 初始化：載入留言並綁定事件
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.localStorage) {
-                renderComments();
-                formElement.addEventListener('submit', handleFormSubmit);
-            } else {
-                // 瀏覽器不支援 localStorage 時的提示
-                alert('您的瀏覽器不支援本地儲存，留言功能將無法運作。');
-            }
-        });
-    </script>
 	    <script>
         const STORAGE_KEY = 'starreach_guestbook_comments';
 
@@ -720,13 +610,13 @@
             {
                 id: generateId(), // 新增 ID
                 name: "王先生",
-                date: "2024-11-12",
+                date: "2025-11-08",
                 content: "貴公司的策略顧問沈柏霖先生提供的市場分析非常精闢，讓我們在面對新興市場時更有信心，流程優化建議也立竿見影！"
             },
             {
                 id: generateId(), // 新增 ID
                 name: "李小姐 (XX 科技)",
-                date: "2024-11-01",
+                date: "2025-11-01",
                 content: "感謝倪佟識顧問協助我們重新梳理了內部的管理流程，效率大幅提升。專業且效率極高。"
             }
         ];
@@ -861,6 +751,7 @@
 
 </body>
 </html>
+
 
 
 
