@@ -471,10 +471,8 @@
 
 /* 自訂選單樣式，確保文字不會太過擁擠 */
 #custom-language-selector {
-    position: fixed; /* 固定在左上角 (根據您的先前需求) */
-    top: 10px;       
-    right: 10px;      
-    z-index: 9999;
+    position: static;
+    margin-right: 25px;
     background: white; 
     padding: 8px 10px;
     border-radius: 5px;
@@ -497,7 +495,25 @@
 <body>
 
     <header>
+	    <div style="display: flex; align-items: center;">
         <div class="logo">✨ 星睿顧問 ✨</div>
+
+	<div id="custom-language-selector">
+            <select id="language-select">
+                <option value="zh-TW">中文 (繁體)</option>
+                <option value="zh-CN">中文 (简体)</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+                <option value="th">ภาษาไทย</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="it">Italiano</option>
+            </select>
+        </div>
+        <div id="google_translate_element"></div>
+    </div>
+		
         <nav>
             <ul>
                 <li><a href="#home">⭐️</a></li>
@@ -677,21 +693,7 @@
     </div>
 </div>
 
-<div id="custom-language-selector">
-    <select id="language-select">
-        <option value="zh-TW">中文 (繁體)</option>
-        <option value="zh-CN">中文 (简体)</option>
-        <option value="ja">日本語</option>
-        <option value="ko">한국어</option>
-        <option value="en">English</option>
-        <option value="th">ภาษาไทย</option>
-        <option value="es">Español</option>
-        <option value="fr">Français</option>
-        <option value="it">Italiano</option>
-    </select>
-</div>
 
-<div id="google_translate_element"></div>
 
     <script>
         const STORAGE_KEY = 'starreach_guestbook_comments';
@@ -899,10 +901,6 @@
             }
         });
     </script>
-
-// ==========================================================
-// 1. Google 翻譯初始化函式 (必須)
-// ==========================================================
 <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement(
@@ -975,6 +973,7 @@
 
 </body>
 </html>
+
 
 
 
