@@ -320,7 +320,7 @@
             font-size: 0.9em;
         }
 
-        /* --- (!!) 8. 手機版響應式樣式 (RWD) --- */
+        /* --- (!!) 9. 手機版響應式樣式 (RWD) --- */
         @media (max-width: 767px) {
             
             /* 調整容器在手機上的邊距 */
@@ -328,27 +328,32 @@
                 padding: 10px;
             }
 
-            /* 導覽列：保持水平排列 */
+            /* 導覽列：Logo 換行，導覽項目接續在下一行 */
             header {
-                /* 保持預設的 display: flex; (水平) */
-                padding: 15px; 
+                flex-direction: column; /* 垂直堆疊 Logo 和 Nav */
+                align-items: flex-start; /* 讓 Logo 和 Nav 靠左對齊 */
+                padding: 15px;
+            }
+            
+            /* Logo 換行後，讓導覽項目佔滿寬度 */
+            nav {
+                width: 100%;
+                margin-top: 10px; /* Logo 和選單間距 */
+                border-top: 1px solid #eee; /* 增加一條分隔線 */
+                padding-top: 10px;
             }
 
-            /* 導覽項目：保持水平排列 */
+            /* 導覽項目：保持水平排列，允許換行，間距微調 */
             nav ul {
-                /* 保持預設的 display: flex; (水平) */
-                margin-top: 0;
-                /* 為了讓所有項目塞進去，稍微縮小項目間距 */
-                justify-content: flex-end; 
-                flex-wrap: wrap; /* 允許換行 */
+                display: flex;
+                flex-wrap: wrap; 
+                justify-content: flex-start; /* 靠左對齊選單項目 */
+                padding-left: 0;
             }
             nav li {
-                /* 稍微縮小項目間距 */
-                margin-left: 10px; 
-                margin-bottom: 5px; /* 項目換行時的間距 */
-            }
-            nav li:first-child {
                 margin-left: 0;
+                margin-right: 15px; /* 項目之間的間距 */
+                margin-bottom: 5px; 
             }
 
             /* 縮小 Hero 區塊的字體與間距 */
@@ -394,7 +399,7 @@
         }
         }
 		
-		/* --- 9. 錨點修正 (Anchor Fix) --- */
+		/* --- 10. 錨點修正 (Anchor Fix) --- */
 		/* 修正當點擊錨點連結時，標題被固定導覽列蓋住的問題 */
 		section[id] {
 			scroll-margin-top: 100px; 
@@ -688,6 +693,7 @@
     </script>
 </body>
 </html>
+
 
 
 
