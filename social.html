@@ -115,13 +115,13 @@
     <script>
         // 範例貼文（取自先前精選吐槽）
         const sample = [
-          {who:'# 靠北星睿 9486', text:'我們部門不是人少，是因為有些人一天只出現二十分鐘，所以看起來像多。', time:'剛剛', likes:3, replies:[]},
-          {who:'# 靠北星睿 9485', text:'我不是不想開會，是我懷疑一旦開始，他會講到連我的靈魂都要加班。', time:'5分鐘前', likes:5, replies:[]},
-          {who:'# 靠北星睿 9484', text:'某人每次說「我來處理」都像詐騙簡訊，我都會先截圖存證。', time:'10分鐘前', likes:6, replies:[]},
-          {who:'# 靠北星睿 9483', text:'他那個笑容喔……一看就是「想拜託你幫忙但裝成沒事」的預兆。', time:'15分鐘前', likes:2, replies:[]},
-          {who:'# 靠北星睿 9482', text:'我最害怕的不是工作量，而是有人突然說「等一下，我想到一個更好的做法」。', time:'20分鐘前', likes:4, replies:[]},
-          {who:'# 靠北星睿 9481', text:'我們開發部的精神圖騰就是：不管做對做錯，先被罵再說。', time:'30分鐘前', likes:1, replies:[]},
-          {who:'# 靠北星睿 9480', text:'有些同事在公司活得像稀有動物，三個月看到一次還會懷疑是幻覺。', time:'昨天', likes:7, replies:[]}
+          {who:'靠北星睿 9486', text:'我們部門不是人少，是因為有些人一天只出現二十分鐘，所以看起來像多。', time:'剛剛', likes:3, replies:[]},
+          {who:'靠北星睿 9485', text:'我不是不想開會，是我懷疑一旦開始，他會講到連我的靈魂都要加班。', time:'5分鐘前', likes:5, replies:[]},
+          {who:'靠北星睿 9484', text:'某人每次說「我來處理」都像詐騙簡訊，我都會先截圖存證。', time:'10分鐘前', likes:6, replies:[]},
+          {who:'靠北星睿 9483', text:'他那個笑容喔……一看就是「想拜託你幫忙但裝成沒事」的預兆。', time:'15分鐘前', likes:2, replies:[]},
+          {who:'靠北星睿 9482', text:'我最害怕的不是工作量，而是有人突然說「等一下，我想到一個更好的做法」。', time:'20分鐘前', likes:4, replies:[]},
+          {who:'靠北星睿 9481', text:'我們開發部的精神圖騰就是：不管做對做錯，先被罵再說。', time:'30分鐘前', likes:1, replies:[]},
+          {who:'靠北星睿 9480', text:'有些同事在公司活得像稀有動物，三個月看到一次還會懷疑是幻覺。', time:'昨天', likes:7, replies:[]}
         ];
     
         const postsEl = document.getElementById('posts');
@@ -196,7 +196,7 @@
         document.getElementById('postBtn').onclick = ()=>{
           const txt = document.getElementById('postText').value.trim();
           if(!txt){ alert('請輸入內容'); return; }
-          sample.unshift({who:'# 靠北星睿 9487', text:txt, time:'剛剛', likes:0, replies:[]});
+          sample.unshift({who:'靠北星睿 9487', text:txt, time:'剛剛', likes:0, replies:[]});
           document.getElementById('postText').value='';
           renderPosts(sample);
         };
@@ -218,3 +218,4 @@
 </body>
 
 </html>
+
