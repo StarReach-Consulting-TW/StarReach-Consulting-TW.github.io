@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
         body {
             background-color: #f4f7f6;
             color: #333;
+			padding-top: 110px;
         }
         .container {
             max-width: 960px;
@@ -30,17 +32,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 40px;
-            z-index: 1000;
+		    position: fixed; 
+		    top: 40px; /* 位於佔位區塊 (40px) 之下 */
+		    width: 100%; /* 填滿寬度 */
+		    padding: 15px 30px; 
+		    z-index: 1001;
         }
 		
-.header-top-row {
-    display: flex;
-    justify-content: space-between; /* 將 Logo 和 Selector 推到兩側 */
-    align-items: center;
-    padding: 15px 0; /* 給予上下內邊距 */
-}
+		.header-top-row {
+		    display: flex;
+		    justify-content: space-between; /* 將 Logo 和 Selector 推到兩側 */
+		    align-items: center;
+		    padding: 15px 0; /* 給予上下內邊距 */
+		}
         .logo {
             font-size: 1.5em;
             font-weight: bold;
@@ -62,7 +66,19 @@
         nav a:hover {
             color: #004a99;
         }
-
+		
+		/* --- 1.1. 新增頂部佔位橫幅樣式 --- */
+		#top-padding-bar {
+		    /* 必須 fixed 才能貼在最頂端，並填滿工具列的空間 */
+		    position: fixed; 
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 40px; /* Google 翻譯工具列的高度 */
+		    background-color: #ffffff; /* 讓它與導覽列背景一致 */
+		    z-index: 1000; /* 確保它在導覽列之下，但在內容之上 */
+		    border-bottom: 1px solid #ddd; /* 增加一條細線，保持設計感 */
+		}
         /* --- 2. 主視覺 (Hero Section) --- */
         .hero {
             background-color: #003366; /* 深藍色背景 */
@@ -308,22 +324,23 @@
             font-style: italic;
             color: #333;
         }
-.delete-button {
-    background: none;
-    border: none;
-    color: #cc0000; /* 紅色 */
-    cursor: pointer;
-    font-size: 0.8em;
-    margin-left: 10px;
-    padding: 2px 5px;
-    border-radius: 3px;
-    transition: background-color 0.2s;
-}
+		
+		.delete-button {
+		    background: none;
+		    border: none;
+		    color: #cc0000; /* 紅色 */
+		    cursor: pointer;
+		    font-size: 0.8em;
+		    margin-left: 10px;
+		    padding: 2px 5px;
+		    border-radius: 3px;
+		    transition: background-color 0.2s;
+		}
 
-.delete-button:hover {
-    background-color: #ffe6e6; /* 淺紅色背景 */
-    text-decoration: underline;
-}
+		.delete-button:hover {
+		    background-color: #ffe6e6; /* 淺紅色背景 */
+		    text-decoration: underline;
+		}
 
 
         /* --- 8. 頁尾 (Footer) --- */
@@ -391,27 +408,27 @@
             }
 
             /* 讓聯絡資訊的標籤和內容垂直堆疊 */
-        .contact-info ul {
-            list-style: none;
-            padding-left: 2px;
-        }
-        .contact-info li {
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        .contact-info li strong {
-            display: inline-block;
-            width: 80px; /* 統一標籤寬度 */
-            color: #004a99;
-            /* 清除留言板送出按鈕的浮動效果 */
-            .guestbook-form .cta-button {
-                float: none;
-                width: 100%; /* 讓按鈕在手機上佔滿寬度 */
-                text-align: center;
-            }
-        }
+	        .contact-info ul {
+	            list-style: none;
+	            padding-left: 2px;
+	        }
+	        .contact-info li {
+	            font-size: 1.1em;
+	            margin-bottom: 15px;
+	            display: flex;
+	            align-items: center;
+	        }
+	        .contact-info li strong {
+	            display: inline-block;
+	            width: 80px; /* 統一標籤寬度 */
+	            color: #004a99;
+	            /* 清除留言板送出按鈕的浮動效果 */
+	            .guestbook-form .cta-button {
+	                float: none;
+	                width: 100%; /* 讓按鈕在手機上佔滿寬度 */
+	                text-align: center;
+	            }
+	        }
         }
 		
 		/* --- 10. 錨點修正 (Anchor Fix) --- */
@@ -420,142 +437,142 @@
 			scroll-margin-top: 130px; 
 		}
 		
-/* --- 11. 彈出視窗 (Message Box) --- */
-.modal-backdrop {
-    /* 讓背景遮罩整個畫面 */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* 確保它在最上層 */
-}
+		/* --- 11. 彈出視窗 (Message Box) --- */
+		.modal-backdrop {
+		    /* 讓背景遮罩整個畫面 */
+		    position: fixed;
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 100%;
+		    background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    z-index: 1000; /* 確保它在最上層 */
+		}
 
-.modal-content {
-    background-color: white;
-    padding: 25px 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    width: 300px; /* 訊息框寬度 */
-    text-align: center;
-}
+		.modal-content {
+		    background-color: white;
+		    padding: 25px 30px;
+		    border-radius: 8px;
+		    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		    width: 300px; /* 訊息框寬度 */
+		    text-align: center;
+		}
 
-.modal-content p {
-    margin-bottom: 20px;
-    font-size: 16px;
-    color: #333;
-}
-
-#alert-ok-button {
-    padding: 8px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s;
-}
-
-#alert-ok-button:hover {
-    background-color: #0056b3;
-}
+		.modal-content p {
+		    margin-bottom: 20px;
+		    font-size: 16px;
+		    color: #333;
+		}
 		
-/* --- 12. 翻譯 (Google Translate) --- */
-/* 隱藏原生選單容器 (必須保留此元素讓 JS 載入) */
-#google_translate_element { 
-    display: none; 
-    visibility: hidden;
-    height: 0;
-    width: 0;
-    line-height: 0;
-    overflow: hidden;
-}
-
-/* 自訂選單樣式，確保文字不會太過擁擠 */
-#custom-language-selector {
-    position: static;
-    margin: 0;
-    background: none; 
-    padding: 0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-/* 調整下拉選單樣式 */
-#language-select {
-    padding: 5px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    cursor: pointer;
-}
+		#alert-ok-button {
+		    padding: 8px 20px;
+		    background-color: #007bff;
+		    color: white;
+		    border: none;
+		    border-radius: 4px;
+		    cursor: pointer;
+		    font-size: 16px;
+		    transition: background-color 0.2s;
+		}
 		
-/* --- 13. 隱藏 Google 翻譯頂部橫幅及相關元素 --- */
-/* 這是隱藏 "這頁面已翻譯..." 提示的關鍵，使用 !important 確保覆蓋 */
-.goog-te-banner-frame { 
-    visibility: hidden !important; 
-    height: 0 !important; 
-    display: none !important;
-}
-
-/* 修正 Google 翻譯可能對 body 元素造成的位移 */
-/* Google 翻譯會在 body 上新增 style="top: XXXpx"，我們需要覆蓋它 */
-body {
-    top: 0px !important; 
-    margin-top: 0px !important;
-}
-
-/* 針對翻譯後 body 新增的 class 進行修正 */
-html.translated-rm-topbar body {
-    margin-top: 0 !important;
-    top: 0 !important;
-}
-
-/* 確保固定導覽列在網頁內容和 Google 翻譯的元素之上 */
-header {
-    /* 確保 header 的 z-index 夠高，原本是 1000，這裡可以再高一點 */
-    z-index: 99999 !important; 
-}
+		#alert-ok-button:hover {
+		    background-color: #0056b3;
+		}
+		
+		/* --- 12. 翻譯 (Google Translate) --- */
+		/* 隱藏原生選單容器 (必須保留此元素讓 JS 載入) */
+		#google_translate_element { 
+		    display: none; 
+		    visibility: hidden;
+		    height: 0;
+		    width: 0;
+		    line-height: 0;
+		    overflow: hidden;
+		}
+		
+		/* 自訂選單樣式，確保文字不會太過擁擠 */
+		#custom-language-selector {
+		    position: static;
+		    margin: 0;
+		    background: none; 
+		    padding: 0;
+		    border-radius: 0;
+		    box-shadow: none;
+		}
+		
+		/* 調整下拉選單樣式 */
+		#language-select {
+		    padding: 5px;
+		    font-size: 14px;
+		    border: 1px solid #ccc;
+		    border-radius: 3px;
+		    cursor: pointer;
+		}
+				
+		/* --- 13. 隱藏 Google 翻譯頂部橫幅及相關元素 --- */
+		/* 這是隱藏 "這頁面已翻譯..." 提示的關鍵，使用 !important 確保覆蓋 */
+		.goog-te-banner-frame { 
+		    visibility: hidden !important; 
+		    height: 0 !important; 
+		    display: none !important;
+		}
+		
+		/* 修正 Google 翻譯可能對 body 元素造成的位移 */
+		/* Google 翻譯會在 body 上新增 style="top: XXXpx"，我們需要覆蓋它 */
+		body {
+		    top: 0px !important; 
+		    margin-top: 0px !important;
+		}
+		
+		/* 針對翻譯後 body 新增的 class 進行修正 */
+		html.translated-rm-topbar body {
+		    margin-top: 0 !important;
+		    top: 0 !important;
+		}
+		
+		/* 確保固定導覽列在網頁內容和 Google 翻譯的元素之上 */
+		header {
+		    /* 確保 header 的 z-index 夠高，原本是 1000，這裡可以再高一點 */
+		    z-index: 99999 !important; 
+		}
 
         /* --- RWD 樣式結束 --- */
-
     </style>
 </head>
+
 <body>
-
+    <div id="top-padding-bar"></div>
     <header>
-	    <div style="display: flex; align-items: center;">
-        <div class="logo">✨ 星睿顧問 ✨</div>
+        <div style="display: flex; align-items: center;">
+            <div class="logo">✨ 星睿顧問 ✨</div>
 
-	<div id="custom-language-selector">
-            <select id="language-select">
-                <option value="zh-TW">中文 (繁體)</option>
-                <option value="zh-CN">中文 (简体)</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="en">English</option>
-                <option value="th">ภาษาไทย</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-                <option value="it">Italiano</option>
-            </select>
+            <div id="custom-language-selector">
+                <select id="language-select">
+                    <option value="zh-TW">中文 (繁體)</option>
+                    <option value="zh-CN">中文 (简体)</option>
+                    <option value="ja">日本語</option>
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="th">ภาษาไทย</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="it">Italiano</option>
+                </select>
+            </div>
+            <div id="google_translate_element"></div>
         </div>
-        <div id="google_translate_element"></div>
-    </div>
-		
+
         <nav>
             <ul>
                 <li><a href="#home">⭐️</a></li>
                 <li><a href="#about">關於我們</a></li>
                 <li><a href="#services">核心服務</a></li>
-                <li><a href="#team">團隊成員</a></li> 
-				<li><a href="#contact">聯絡我們</a></li>
-				<li><a href="#guestbook">留言板</a></li>
+                <li><a href="#team">團隊成員</a></li>
+                <li><a href="#contact">聯絡我們</a></li>
+                <li><a href="#guestbook">留言板</a></li>
             </ul>
         </nav>
     </header>
@@ -600,8 +617,8 @@ header {
             <div class="section-content">
                 <h2>團隊成員 | Our People</h2>
                 <p class="team-intro">
-                    在星睿顧問，我們相信每一位顧問的觀點，都能為複雜問題找到不同解答。<br>
-                    三位成員各具鮮明個性與專業領域，他們的存在本身，就是這間公司的縮影。
+                    在星睿顧問，我們相信每一位顧問的觀點，都能為複雜問題找到不同解答。
+                    <br> 三位成員各具鮮明個性與專業領域，他們的存在本身，就是這間公司的縮影。
                 </p>
                 <hr class="divider">
                 <div class="team-grid">
@@ -615,9 +632,7 @@ header {
                             <li><strong>📧 聯絡信箱：</strong><a href="mailto:tony.ni@starreach.com.tw">tony.ni@starreach.com.tw</a></li>
                         </ul>
                         <p class="member-desc">
-                            具十餘年顧問與專案管理經驗，擅長從流程中發現結構問題。
-                            對內部效率、報告架構與決策節奏有獨到見解，常以犀利的觀點指出盲點。
-                            他的同事形容他「反應極快、邏輯精準、偶爾過於直接」，但成果往往不容質疑。
+                            具十餘年顧問與專案管理經驗，擅長從流程中發現結構問題。 對內部效率、報告架構與決策節奏有獨到見解，常以犀利的觀點指出盲點。 他的同事形容他「反應極快、邏輯精準、偶爾過於直接」，但成果往往不容質疑。
                         </p>
                         <blockquote>💬 個人座右銘：「真正的問題從來不在我這裡。」</blockquote>
                     </div>
@@ -632,9 +647,7 @@ header {
                             <li><strong>📧 聯絡信箱：</strong><a href="mailto:eden.gao@starreach.com.tw">eden.gao@starreach.com.tw</a></li>
                         </ul>
                         <p class="member-desc">
-                            以冷靜與精準著稱，是團隊中最理性、最少情緒的分析師。
-                            對數據與邏輯結構有近乎強迫的完美主義，任何推論都需有依據。
-                            他話不多，卻能在一句評論裡讓整個會議靜默。
+                            以冷靜與精準著稱，是團隊中最理性、最少情緒的分析師。 對數據與邏輯結構有近乎強迫的完美主義，任何推論都需有依據。 他話不多，卻能在一句評論裡讓整個會議靜默。
                         </p>
                         <blockquote>💬 個人座右銘：「事實不會說謊，除非你沒讀懂它。」</blockquote>
                     </div>
@@ -647,24 +660,22 @@ header {
                             <li><strong>📍 專長領域：</strong>專案文件管理、會議紀錄、部門協調支援</li>
                             <li><strong>🎓 學歷：</strong>淡江大學公共行政系</li>
                             <li><strong>📧 聯絡信箱：</strong><a href="mailto:xinjen.wo@starreach.com.tw">xinjen.wo@starreach.com.tw</a></li>
-						</ul>
+                        </ul>
                         <p class="member-desc">
-                            新進成員，細心負責，具備高度學習能力。
-                            主要負責資料整合與跨部門溝通，協助顧問完成各類文件與簡報。
-                            以謙和、穩定的態度深受客戶與同事信任，是團隊運作中不可或缺的橋樑。
+                            新進成員，細心負責，具備高度學習能力。 主要負責資料整合與跨部門溝通，協助顧問完成各類文件與簡報。 以謙和、穩定的態度深受客戶與同事信任，是團隊運作中不可或缺的橋樑。
                         </p>
                         <blockquote>💬 個人座右銘：「沒有人是一開始就懂的。」</blockquote>
                     </div>
                 </div>
-                
+
                 <hr class="divider">
 
                 <div class="team-philosophy">
                     <h3>🪞 團隊理念 | Team Philosophy</h3>
                     <blockquote>
-                        我們相信「顧問」不只是給答案的人，<br>
-                        而是能在混亂中看見邏輯、<br>
-                        在組織的縫隙間找到平衡的人。
+                        我們相信「顧問」不只是給答案的人，
+                        <br> 而是能在混亂中看見邏輯、
+                        <br> 在組織的縫隙間找到平衡的人。
                     </blockquote>
                 </div>
             </div>
@@ -703,29 +714,30 @@ header {
                         <textarea id="comment-content" name="content" rows="5" required></textarea>
                     </div>
                     <button type="submit" class="cta-button">送出留言</button>
-                    <div style="clear: both;"></div> </form>
+                    <div style="clear: both;"></div>
+                </form>
 
                 <hr class="divider">
 
                 <h3>近期客戶回饋</h3>
                 <div class="comment-list" id="commentList">
-                    </div>
+                </div>
             </div>
         </section>
-		
-        </main>
+
+    </main>
 
 
     <footer>
         <p>&copy; 2025 星睿顧問有限公司 (StarReach Consulting Ltd.) 版權所有。</p>
     </footer>
-	
-<div id="custom-alert-modal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content">
-        <p id="alert-message"></p>
-        <button id="alert-ok-button">確定</button>
+
+    <div id="custom-alert-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <p id="alert-message"></p>
+            <button id="alert-ok-button">確定</button>
+        </div>
     </div>
-</div>
 
 
 
@@ -944,116 +956,117 @@ header {
             }
         });
     </script>
-	
-<script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement(
-        {
-          pageLanguage: 'zh-TW', 
-          includedLanguages: 'zh-TW,zh-CN,ja,ko,en,th,es,fr,it', 
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE, 
-          autoDisplay: false
-        }, 
-        'google_translate_element'
-      );
-    }
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<script>
-    // 定義一個外部函式 doGTranslate，Google 翻譯工具的程式碼會在背景中呼叫它
-    // 這是讓自訂選單與隱藏的 Google 翻譯元件互動的關鍵
-    function doGTranslate(lang_pair) {
-        // 如果傳入的語言對是 'zh-TW|zh-TW' (原始語言)，則直接退出
-        if (lang_pair.includes('|zh-TW') && lang_pair.includes('zh-TW|')) return;
-
-        var split = lang_pair.split('|');
-        var targetLangCode = split[1]; // 取得目標語言代碼
-        
-        // 嘗試找到 iFrame 內的 select 元素
-        var frame = document.getElementById('google_translate_element').getElementsByTagName('iframe')[0];
-        
-        if (frame) {
-            // 由於 Same-Origin Policy，直接存取 iFrame 內容可能會失敗，
-            // 但如果 Google 的 JS 已經準備好，它會暴露一個處理函式。
-            // 這裡我們假設 Google 的 JS 已經在全域範圍內建立了一個隱藏的 Select 元件
-            try {
-                var select = frame.contentWindow.document.getElementsByTagName('select')[0];
-                if (select) {
-                    select.value = targetLangCode;
-                    // 模擬 change 事件來觸發翻譯
-                    select.dispatchEvent(new Event('change')); 
-                    return;
-                }
-            } catch(e) {
-                // 如果因安全性限制無法存取 iFrame (最常見的情況)
-                console.warn("Same-Origin Policy blocked iFrame access. Using URL Hash fallback.");
-            }
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement(
+            {
+              pageLanguage: 'zh-TW', 
+              includedLanguages: 'zh-TW,zh-CN,ja,ko,en,th,es,fr,it', 
+              layout: google.translate.TranslateElement.InlineLayout.SIMPLE, 
+              autoDisplay: false
+            }, 
+            'google_translate_element'
+          );
         }
-        
-        // 備用方案：如果無法存取 select，則手動改變 URL 的 Hash，讓 Google 翻譯元件自行偵測
-        window.location.hash = '#googtrans(' + lang_pair + ')';
-        window.location.reload(); 
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        // 定義一個外部函式 doGTranslate，Google 翻譯工具的程式碼會在背景中呼叫它
+        // 這是讓自訂選單與隱藏的 Google 翻譯元件互動的關鍵
+        function doGTranslate(lang_pair) {
+            // 如果傳入的語言對是 'zh-TW|zh-TW' (原始語言)，則直接退出
+            if (lang_pair.includes('|zh-TW') && lang_pair.includes('zh-TW|')) return;
+    
+            var split = lang_pair.split('|');
+            var targetLangCode = split[1]; // 取得目標語言代碼
+            
+            // 嘗試找到 iFrame 內的 select 元素
+            var frame = document.getElementById('google_translate_element').getElementsByTagName('iframe')[0];
+            
+            if (frame) {
+                // 由於 Same-Origin Policy，直接存取 iFrame 內容可能會失敗，
+                // 但如果 Google 的 JS 已經準備好，它會暴露一個處理函式。
+                // 這裡我們假設 Google 的 JS 已經在全域範圍內建立了一個隱藏的 Select 元件
+                try {
+                    var select = frame.contentWindow.document.getElementsByTagName('select')[0];
+                    if (select) {
+                        select.value = targetLangCode;
+                        // 模擬 change 事件來觸發翻譯
+                        select.dispatchEvent(new Event('change')); 
+                        return;
+                    }
+                } catch(e) {
+                    // 如果因安全性限制無法存取 iFrame (最常見的情況)
+                    console.warn("Same-Origin Policy blocked iFrame access. Using URL Hash fallback.");
+                }
+            }
+            
+            // 備用方案：如果無法存取 select，則手動改變 URL 的 Hash，讓 Google 翻譯元件自行偵測
+            window.location.hash = '#googtrans(' + lang_pair + ')';
+            window.location.reload(); 
+        }
+    
+    
+        // 3. 核心邏輯：監聽下拉選單的 'change' 事件
+        document.addEventListener('DOMContentLoaded', function() {
+            var selectElement = document.getElementById('language-select');
+            var originalLang = 'zh-TW'; 
+    
+            if (!selectElement) return;
+    
+            selectElement.addEventListener('change', function() {
+                var targetLang = this.value; 
+                
+                // 核心變動：直接呼叫 doGTranslate
+                // 格式為 '原始語言|目標語言'
+                doGTranslate(originalLang + '|' + targetLang);
+            });
+        });
+    
+    	
+    /* 新增的 JavaScript 區塊：專門處理 Google 翻譯載入後的位移問題 */
+    // 這個函數用於在 Google 翻譯載入後強制修正網頁排版
+    function fixGoogleTranslateLayout() {
+        // 1. 移除 Google 翻譯頂部橫幅的 iFrame
+        const bannerFrame = document.querySelector('.goog-te-banner-frame');
+        if (bannerFrame) {
+            bannerFrame.style.display = 'none';
+            bannerFrame.style.visibility = 'hidden';
+        }
+    
+        // 2. 移除 body 元素上可能由 Google 翻譯添加的 style 屬性
+        // 這些屬性會導致網頁內容往下移
+        document.body.style.removeProperty('top');
+        document.body.style.removeProperty('margin-top');
+    
+        // 3. 確保 html 元素也沒有位移問題
+        document.documentElement.style.removeProperty('margin-top');
     }
-
-
-    // 3. 核心邏輯：監聽下拉選單的 'change' 事件
+    
+    // 由於 Google 翻譯是異步載入的，我們需要重複檢查並修正
+    // 我們可以利用 window.onload 或 setTimeout 確保在翻譯完成後執行
+    window.addEventListener('load', function() {
+        // 第一次立即修正
+        fixGoogleTranslateLayout(); 
+    
+        // 設置一個計時器，在 Google 翻譯完成載入/翻譯後再次修正
+        // 這是最實用且不會影響效能的作法
+        setTimeout(fixGoogleTranslateLayout, 500); 
+        setTimeout(fixGoogleTranslateLayout, 1500); // 多執行幾次，確保穩定
+    });
+    
+    // 當語言選單發生變化時 (即翻譯被觸發)，也嘗試修正
     document.addEventListener('DOMContentLoaded', function() {
         var selectElement = document.getElementById('language-select');
-        var originalLang = 'zh-TW'; 
-
-        if (!selectElement) return;
-
-        selectElement.addEventListener('change', function() {
-            var targetLang = this.value; 
-            
-            // 核心變動：直接呼叫 doGTranslate
-            // 格式為 '原始語言|目標語言'
-            doGTranslate(originalLang + '|' + targetLang);
-        });
+        if (selectElement) {
+            selectElement.addEventListener('change', fixGoogleTranslateLayout);
+        }
     });
-
-	
-/* 新增的 JavaScript 區塊：專門處理 Google 翻譯載入後的位移問題 */
-// 這個函數用於在 Google 翻譯載入後強制修正網頁排版
-function fixGoogleTranslateLayout() {
-    // 1. 移除 Google 翻譯頂部橫幅的 iFrame
-    const bannerFrame = document.querySelector('.goog-te-banner-frame');
-    if (bannerFrame) {
-        bannerFrame.style.display = 'none';
-        bannerFrame.style.visibility = 'hidden';
-    }
-
-    // 2. 移除 body 元素上可能由 Google 翻譯添加的 style 屬性
-    // 這些屬性會導致網頁內容往下移
-    document.body.style.removeProperty('top');
-    document.body.style.removeProperty('margin-top');
-
-    // 3. 確保 html 元素也沒有位移問題
-    document.documentElement.style.removeProperty('margin-top');
-}
-
-// 由於 Google 翻譯是異步載入的，我們需要重複檢查並修正
-// 我們可以利用 window.onload 或 setTimeout 確保在翻譯完成後執行
-window.addEventListener('load', function() {
-    // 第一次立即修正
-    fixGoogleTranslateLayout(); 
-
-    // 設置一個計時器，在 Google 翻譯完成載入/翻譯後再次修正
-    // 這是最實用且不會影響效能的作法
-    setTimeout(fixGoogleTranslateLayout, 500); 
-    setTimeout(fixGoogleTranslateLayout, 1500); // 多執行幾次，確保穩定
-});
-
-// 當語言選單發生變化時 (即翻譯被觸發)，也嘗試修正
-document.addEventListener('DOMContentLoaded', function() {
-    var selectElement = document.getElementById('language-select');
-    if (selectElement) {
-        selectElement.addEventListener('change', fixGoogleTranslateLayout);
-    }
-});
-</script>
+    </script>
 
 
 </body>
+
 </html>
