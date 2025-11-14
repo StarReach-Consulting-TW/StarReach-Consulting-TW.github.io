@@ -7,8 +7,8 @@
     <title>靠北星睿</title>
     <style>
         :root{
-          --bg:#f5f7fb; --card:#ffffff; --muted:#7a7f86; --accent:#2b8cff; --danger:#ff6b6b;
-          font-family: "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
+         --bg:#f5f7fb; --card:#ffffff; --muted:#7a7f86; --accent:#2b8cff; --danger:#ff6b6b;
+         font-family: "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
         }
         body{margin:0;background:linear-gradient(180deg,#eef3ff 0%,var(--bg) 100%);color:#111;}
         header{background:#1f2a44;color:#fff;padding:20px 18px;display:flex;align-items:center;gap:14px;}
@@ -103,8 +103,7 @@
                 </div>
 
                 <div id="posts" class="posts" style="margin-top:12px">
-                    <!-- sample posts populated by JS -->
-                </div>
+                    </div>
 
             </section>
         </div>
@@ -115,75 +114,114 @@
     <script>
         // 範例貼文（取自先前精選吐槽）
         const sample = [
-          {who:'靠北星睿 9486', text:'我們部門不是人少，是因為有些人一天只出現二十分鐘，所以看起來像多。', time:'剛剛', likes:3, replies:[]},
-          {who:'靠北星睿 9485', text:'我不是不想開會，是我懷疑一旦開始，他會講到連我的靈魂都要加班。', time:'5分鐘前', likes:5, replies:[]},
-          {who:'靠北星睿 9484', text:'某人每次說「我來處理」都像詐騙簡訊，我都會先截圖存證。', time:'10分鐘前', likes:6, replies:[]},
-          {who:'靠北星睿 9483', text:'他那個笑容喔……一看就是「想拜託你幫忙但裝成沒事」的預兆。', time:'15分鐘前', likes:2, replies:[]},
-          {who:'靠北星睿 9482', text:'我最害怕的不是工作量，而是有人突然說「等一下，我想到一個更好的做法」。', time:'20分鐘前', likes:4, replies:[]},
-          {who:'靠北星睿 9481', text:'我們開發部的精神圖騰就是：不管做對做錯，先被罵再說。', time:'30分鐘前', likes:1, replies:[]},
-          {who:'靠北星睿 9480', text:'有些同事在公司活得像稀有動物，三個月看到一次還會懷疑是幻覺。', time:'昨天', likes:7, replies:[]}
+         {who:'靠北星睿 9486', text:'我們部門不是人少，是因為有些人一天只出現二十分鐘，所以看起來像多。', time:'剛剛', likes:3, replies:[]},
+         {who:'靠北星睿 9485', text:'我不是不想開會，是我懷疑一旦開始，他會講到連我的靈魂都要加班。', time:'5分鐘前', likes:5, replies:[]},
+         {who:'靠北星睿 9484', text:'某人每次說「我來處理」都像詐騙簡訊，我都會先截圖存證。', time:'10分鐘前', likes:6, replies:[]},
+         {who:'靠北星睿 9483', text:'他那個笑容喔……一看就是「想拜託你幫忙但裝成沒事」的預兆。', time:'15分鐘前', likes:2, replies:[]},
+         {who:'靠北星睿 9482', text:'我最害怕的不是工作量，而是有人突然說「等一下，我想到一個更好的做法」。', time:'20分鐘前', likes:4, replies:[]},
+         {who:'靠北星睿 9481', text:'我們開發部的精神圖騰就是：不管做對做錯，先被罵再說。', time:'30分鐘前', likes:1, replies:[]},
+         {who:'靠北星睿 9480', text:'有些同事在公司活得像稀有動物，三個月看到一次還會懷疑是幻覺。', time:'昨天', likes:7, replies:[]}
         ];
     
+        // -----------------------------------------------------------------
+        // 🌟 修改點 1: 設定流水號起始值
+        // -----------------------------------------------------------------
+        let nextPostId = 9487;
+
         const postsEl = document.getElementById('posts');
         const qEl = document.getElementById('q');
     
         function renderPosts(list){
-          postsEl.innerHTML = '';
-          list.forEach((p, idx)=>{
-            const div = document.createElement('div');
-            div.className = 'post';
-            div.innerHTML = `
-              <div class="top"><div class="avatar" style="width:36px;height:36px;border-radius:6px">#</div>
-                <div>
-                  <div><span class="who">${p.who}</span><span class="time"> · ${p.time}</span></div>
-                </div>
-              </div>
-              <div class="content">${escapeHtml(p.text)}</div>
-              <div class="actions">
-                <button class="like" data-i="${idx}">❤ <span class="count">${p.likes}</span></button>
-                <button class="replyBtn" data-i="${idx}">💬 回覆</button>
-                <button class="share" data-i="${idx}">⤴ 分享</button>
-              </div>
-              <div class="reply-list" id="replies-${idx}"></div>
-            `;
-            postsEl.appendChild(div);
-          });
-          attachEvents();
+         postsEl.innerHTML = '';
+         list.forEach((p, idx)=>{
+           const div = document.createElement('div');
+           div.className = 'post';
+           // -----------------------------------------------------------------
+           // 🌟 修改點 2: 渲染時檢查 isOwner 屬性，決定是否顯示刪除按鈕
+           // 並且對 p.who 也使用 escapeHtml 增加安全性
+           // -----------------------------------------------------------------
+           div.innerHTML = `
+             <div class="top"><div class="avatar" style="width:36px;height:36px;border-radius:6px">#</div>
+               <div>
+                 <div><span class="who">${escapeHtml(p.who)}</span><span class="time"> · ${p.time}</span></div>
+               </div>
+             </div>
+             <div class="content">${escapeHtml(p.text)}</div>
+             <div class="actions">
+               <button class="like" data-i="${idx}">❤ <span class="count">${p.likes}</span></button>
+               <button class="replyBtn" data-i="${idx}">💬 回覆</button>
+               <button class="share" data-i="${idx}">⤴ 分享</button>
+               ${p.isOwner ? `<button class="deleteBtn" data-i="${idx}" style="color:var(--danger);margin-left:auto;font-weight:600;">🗑️ 刪除</button>` : ''}
+             </div>
+             <div class="reply-list" id="replies-${idx}"></div>
+           `;
+           postsEl.appendChild(div);
+         });
+         // 🌟 修改點 3: 將 list 傳入 attachEvents，以便刪除時能正確操作
+         attachEvents(list);
         }
     
-        function attachEvents(){
-          document.querySelectorAll('.like').forEach(btn=>{
-            btn.onclick = ()=>{
-              const i = btn.dataset.i;
-              sample[i].likes++;
-              btn.querySelector('.count').textContent = sample[i].likes;
-              btn.classList.add('active');
-            };
-          });
-          document.querySelectorAll('.replyBtn').forEach(b=>{
-            b.onclick = ()=>{
-              const i = b.dataset.i;
-              const r = prompt('匿名回覆：');
-              if(r) {
-                sample[i].replies.push(r);
-                renderReply(i);
-              }
+        // 🌟 修改點 4: attachEvents 接收 list 參數，並新增刪除事件
+        function attachEvents(list){
+         document.querySelectorAll('.like').forEach(btn=>{
+           btn.onclick = ()=>{
+             const i = btn.dataset.i;
+             // 注意：此處修改 list[i].likes 仍可能因為搜尋過濾而與 sample 不同步
+             // 更好的做法是操作 sample，但此處為求簡單，暫時保留
+             // **更新**：為避免 bug，我們假設點讚不需同步回 sample
+             list[i].likes++; // 操作當前列表
+             btn.querySelector('.count').textContent = list[i].likes;
+             btn.classList.add('active');
+           };
+         });
+         document.querySelectorAll('.replyBtn').forEach(b=>{
+           b.onclick = ()=>{
+             const i = b.dataset.i;
+             const r = prompt('匿名回覆：');
+             if(r) {
+               // 同上，操作 list (可能是 sample 或 filtered)
+               list[i].replies.push(r); 
+               renderReply(i, list); // 傳入 list
+             }
+           }
+         });
+         document.querySelectorAll('.share').forEach(b=>{
+           b.onclick = ()=>alert('分享功能僅示範用（本地）');
+         });
+
+         // 🌟 修改點 5: 新增刪除按鈕的事件綁定
+         document.querySelectorAll('.deleteBtn').forEach(btn => {
+            btn.onclick = () => {
+                const i = btn.dataset.i; // 這是 list (可能是 sample 或 filtered) 中的 index
+                
+                if (confirm('確定要刪除這則貼文嗎？')) {
+                    const postToDelete = list[i];
+                    
+                    // 關鍵：我們必須從 'sample' (原始資料) 中找到並刪除
+                    const originalIndex = sample.findIndex(p => p === postToDelete);
+                    if (originalIndex > -1) {
+                        sample.splice(originalIndex, 1);
+                    }
+                    
+                    // 刪除後，清除搜尋條件並重新渲染完整的 sample 列表
+                    qEl.value = '';
+                    renderPosts(sample);
+                }
             }
-          });
-          document.querySelectorAll('.share').forEach(b=>{
-            b.onclick = ()=>alert('分享功能僅示範用（本地）');
-          });
+        });
         }
     
-        function renderReply(i){
-          const container = document.getElementById('replies-'+i);
-          container.innerHTML = '';
-          sample[i].replies.forEach(r=>{
-            const el = document.createElement('div');
-            el.className = 'reply';
-            el.textContent = r;
-            container.appendChild(el);
-          });
+        // 修改 renderReply 以接收 list
+        function renderReply(i, list){
+         const container = document.getElementById('replies-'+i);
+         container.innerHTML = '';
+         // 使用傳入的 list 來渲染回覆
+         list[i].replies.forEach(r=>{
+           const el = document.createElement('div');
+           el.className = 'reply';
+           el.textContent = r; // textContent 會自動跳脫 HTML，較安全
+           container.appendChild(el);
+         });
         }
     
         // escape
@@ -192,13 +230,30 @@
         // init
         renderPosts(sample);
     
-        // 發文
+        // -----------------------------------------------------------------
+        // 🌟 修改點 6: 修改發文邏輯
+        // -----------------------------------------------------------------
         document.getElementById('postBtn').onclick = ()=>{
-          const txt = document.getElementById('postText').value.trim();
-          if(!txt){ alert('請輸入內容'); return; }
-          sample.unshift({who:'靠北星睿 9487', text:txt, time:'剛剛', likes:0, replies:[]});
-          document.getElementById('postText').value='';
-          renderPosts(sample);
+         const txt = document.getElementById('postText').value.trim();
+         if(!txt){ alert('請輸入內容'); return; }
+
+         // 建立新貼文物件
+         const newPost = {
+            who: '靠北星睿 ' + nextPostId, // 使用流水號
+            text: txt, 
+            time: '剛剛', 
+            likes: 0, 
+            replies: [], 
+            isOwner: true // 標記為使用者自己的貼文
+         };
+         nextPostId++; // 流水號遞增
+
+         sample.unshift(newPost); // 加到資料陣列最前面
+         document.getElementById('postText').value='';
+         
+         // 發文後，清空搜尋並渲染完整列表
+         qEl.value = '';
+         renderPosts(sample);
         };
     
         // 新增表單快速鍵
@@ -206,10 +261,10 @@
     
         // 搜尋（簡單）
         document.getElementById('btnSearch').onclick = ()=>{
-          const q = qEl.value.trim().toLowerCase();
-          if(!q){ renderPosts(sample); return; }
-          const filtered = sample.filter(p=>p.text.toLowerCase().includes(q) || p.who.toLowerCase().includes(q));
-          renderPosts(filtered);
+         const q = qEl.value.trim().toLowerCase();
+         if(!q){ renderPosts(sample); return; }
+         const filtered = sample.filter(p=>p.text.toLowerCase().includes(q) || p.who.toLowerCase().includes(q));
+         renderPosts(filtered);
         };
     
         // Enter 搜尋
@@ -218,4 +273,3 @@
 </body>
 
 </html>
-
