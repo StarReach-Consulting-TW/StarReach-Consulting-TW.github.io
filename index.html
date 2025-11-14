@@ -377,43 +377,44 @@
 
             /* 導覽列：Logo 換行，導覽項目接續在下一行 */
             header {
-				position: static; /* 讓 Header 恢復到正常文件流 */
-		        top: auto;      /* 移除固定定位的 top 屬性 */
-		        left: auto;     /* 移除固定定位的 left 屬性 */
-                flex-direction: column; /* 垂直堆疊 Logo 和 Nav */
-                align-items: flex-start; /* 讓 Logo 和 Nav 靠左對齊 */
-                padding: 15px;
+                padding: 10px 0;
             }
 			
 		    /* 【關鍵修正 2：取消 body 頂部填充】 */
 		    body {
-		        padding-top: 0 !important; /* Header 不再固定，取消填充 */
+		        padding-top: 90px !important; /* Header 不再固定，取消填充 */
 		    }
 		
 		    /* 【關鍵修正 3：隱藏頂部佔位區塊】 */
 		    #top-padding-bar {
-		        display: none; 
+		        display: block; 
 		    }
 		    
 		    /* 【關鍵修正 4：Header 內容堆疊】 */
 		    .header-content-wrapper {
 		        flex-direction: column; /* 垂直堆疊 Logo 和 Nav */
 		        align-items: flex-start; /* 靠左對齊 */
-		        padding: 0; /* 讓 header 本身的 padding 生效 */
+				width: 100%;
+				max-width: 100%;
+		        padding: 0 15px; /* 讓 header 本身的 padding 生效 */
 		    }
-		    
-		    /* 導覽列：Logo 換行，導覽項目接續在下一行 */
-		    /* ... 您的原有 nav, nav ul, nav li RWD 樣式... */
-		
+			
+			.header-content-wrapper > div:first-child {
+			        width: 100%;
+			        justify-content: space-between; 
+			        margin-bottom: 10px; /* 與下方的 Nav 之間增加間距 */
+			        padding: 0; /* 避免重複 padding */
+			}
+			
 		    /* 錨點修正：因為 Header 已經是 static，不再需要 130px 的大間距 */
 		    section[id] {
-		        scroll-margin-top: 20px; /* 設回一個較小的間距即可 */
+		        scroll-margin-top: 130px; 
 		    }
 			
             /* Logo 換行後，讓導覽項目佔滿寬度 */
             nav {
                 width: 100%;
-                margin-top: 10px; /* Logo 和選單間距 */
+                margin-top: 0; /* Logo 和選單間距 */
                 border-top: 1px solid #eee; /* 增加一條分隔線 */
                 padding-top: 10px;
             }
@@ -1118,5 +1119,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
+
 
 
