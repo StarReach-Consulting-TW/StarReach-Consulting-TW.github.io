@@ -31,8 +31,8 @@
             justify-content: space-between;
             align-items: center;
             position: sticky;
-            top: 0;
-            z-index: 99999 !important;;
+            top: 40px;
+            z-index: 1000;
         }
 		
 .header-top-row {
@@ -493,31 +493,6 @@
     border: 1px solid #ccc;
     border-radius: 3px;
     cursor: pointer;
-}
-		
-/* --- 13. 隱藏 Google 翻譯頂部橫幅及相關元素 --- */
-/* 1. 隱藏主要的頂部橫幅 iFrame */
-.goog-te-banner-frame { 
-    visibility: hidden !important; 
-    height: 0 !important; 
-    display: none !important;
-}
-
-/* 2. 移除 Google 翻譯對 body, html, body.skiptranslate 造成的位移 */
-/* Google 會在 body 或 html 標籤上增加 style="top: XXXpx" */
-body, html {
-    margin-top: 0 !important;
-    top: 0 !important;
-}
-/* 針對翻譯後 body 新增的 class 進行修正 */
-html.translated-rm-topbar body, body.skiptranslate {
-    margin-top: 0 !important;
-    top: 0 !important;
-}
-
-/* 隱藏右下角可能出現的 Google logo/浮動按鈕 */
-.goog-logo-link, .goog-tooltip, #goog-gt-vt {
-    display: none !important;
 }
 
         /* --- RWD 樣式結束 --- */
@@ -1012,49 +987,11 @@ html.translated-rm-topbar body, body.skiptranslate {
     });
 
 	
-/* 處理 Google 翻譯載入後的位移問題 */
-function fixGoogleTranslateLayout() {
-    // 1. 搜尋並移除 Google 翻譯頂部橫幅的 iFrame
-    const bannerFrame = document.querySelector('.goog-te-banner-frame');
-    if (bannerFrame) {
-        // 直接從 DOM 中移除 iFrame 元素，這是最乾淨的移除方法
-        bannerFrame.remove(); 
-    }
-    
-    // 2. 強制移除 Google 翻譯對 body/html 元素所作的 inline style 變動
-    // 這是確保網頁內容能向上移動的關鍵
-    document.body.style.removeProperty('top');
-    document.body.style.removeProperty('margin-top');
-    document.documentElement.style.removeProperty('margin-top');
 
-    // 3. 額外檢查是否有殘留的頂部空間，如果 body 上有特殊的 class，也確保移除它們
-    if (document.body.classList.contains('skiptranslate')) {
-        document.body.classList.remove('skiptranslate');
-    }
-    
-    // 4. 重設 body 的 scroll-padding-top（如果有使用錨點且 header 是 fixed 時）
-    document.body.style.scrollPaddingTop = '0'; 
-}
-
-
-// **重要**：讓它延遲執行，確保 Google 翻譯的程式碼先執行完畢
-window.addEventListener('load', function() {
-    // 延遲 500 毫秒 (0.5 秒) 後執行
-    setTimeout(fixGoogleTranslateLayout, 500); 
-    // 延遲 1500 毫秒 (1.5 秒) 後再次執行，增加穩定性
-    setTimeout(fixGoogleTranslateLayout, 1500); 
-});
-
-// 當語言選單發生變化時 (即翻譯被觸發)，也嘗試修正
-document.addEventListener('DOMContentLoaded', function() {
-    var selectElement = document.getElementById('language-select');
-    if (selectElement) {
-        selectElement.addEventListener('change', fixGoogleTranslateLayout);
-    }
-});
 </script>
 
 
 </body>
 </html>
+
 
