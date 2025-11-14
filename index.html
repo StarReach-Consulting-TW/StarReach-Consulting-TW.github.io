@@ -496,42 +496,30 @@
 }
 		
 /* --- 13. 隱藏 Google 翻譯頂部橫幅及相關元素 --- */
-/* 1. 隱藏主要提示橫幅的 iFrame 或頂層容器 */
-/* 這是隱藏 "這頁面已翻譯..." 提示的關鍵 */
+/* 這是隱藏 "這頁面已翻譯..." 提示的關鍵，使用 !important 確保覆蓋 */
 .goog-te-banner-frame { 
     visibility: hidden !important; 
     height: 0 !important; 
     display: none !important;
 }
 
-/* 2. 修正 Google 翻譯可能對 body 元素造成的位移 */
-/* 有時 Google 會為橫幅預留空間，導致網頁內容下移 */
+/* 修正 Google 翻譯可能對 body 元素造成的位移 */
+/* Google 翻譯會在 body 上新增 style="top: XXXpx"，我們需要覆蓋它 */
 body {
     top: 0px !important; 
     margin-top: 0px !important;
 }
 
-/* 3. 隱藏可能在右下角出現的翻譯浮動按鈕 */
-/* 如果您沒有看到這個按鈕，可以省略這段 */
-.goog-logo-link {
-    display: none !important;
-}
-.goog-tooltip {
-    display: none !important;
-}
-.goog-tooltip:hover {
-    display: none !important;
-}
-
-/* 4. 新增更強制的選擇器，隱藏頂部橫幅及其可能產生的位移 */
+/* 針對翻譯後 body 新增的 class 進行修正 */
 html.translated-rm-topbar body {
     margin-top: 0 !important;
     top: 0 !important;
 }
 
-/* 隱藏可能的頂部遮罩 */
-#goog-gt-vt {
-    display: none !important;
+/* 確保固定導覽列在網頁內容和 Google 翻譯的元素之上 */
+header {
+    /* 確保 header 的 z-index 夠高，原本是 1000，這裡可以再高一點 */
+    z-index: 99999 !important; 
 }
 
         /* --- RWD 樣式結束 --- */
@@ -1024,48 +1012,48 @@ html.translated-rm-topbar body {
             doGTranslate(originalLang + '|' + targetLang);
         });
     });
+
+	
+/* 新增的 JavaScript 區塊：專門處理 Google 翻譯載入後的位移問題 */
+// 這個函數用於在 Google 翻譯載入後強制修正網頁排版
+function fixGoogleTranslateLayout() {
+    // 1. 移除 Google 翻譯頂部橫幅的 iFrame
+    const bannerFrame = document.querySelector('.goog-te-banner-frame');
+    if (bannerFrame) {
+        bannerFrame.style.display = 'none';
+        bannerFrame.style.visibility = 'hidden';
+    }
+
+    // 2. 移除 body 元素上可能由 Google 翻譯添加的 style 屬性
+    // 這些屬性會導致網頁內容往下移
+    document.body.style.removeProperty('top');
+    document.body.style.removeProperty('margin-top');
+
+    // 3. 確保 html 元素也沒有位移問題
+    document.documentElement.style.removeProperty('margin-top');
+}
+
+// 由於 Google 翻譯是異步載入的，我們需要重複檢查並修正
+// 我們可以利用 window.onload 或 setTimeout 確保在翻譯完成後執行
+window.addEventListener('load', function() {
+    // 第一次立即修正
+    fixGoogleTranslateLayout(); 
+
+    // 設置一個計時器，在 Google 翻譯完成載入/翻譯後再次修正
+    // 這是最實用且不會影響效能的作法
+    setTimeout(fixGoogleTranslateLayout, 500); 
+    setTimeout(fixGoogleTranslateLayout, 1500); // 多執行幾次，確保穩定
+});
+
+// 當語言選單發生變化時 (即翻譯被觸發)，也嘗試修正
+document.addEventListener('DOMContentLoaded', function() {
+    var selectElement = document.getElementById('language-select');
+    if (selectElement) {
+        selectElement.addEventListener('change', fixGoogleTranslateLayout);
+    }
+});
 </script>
 
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
