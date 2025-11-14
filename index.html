@@ -1025,31 +1025,11 @@ html.translated-rm-topbar body {
         });
     });
 
-	
-// 預留空間的 JS 調整
-function handleTranslationChange() {
-    // 檢查 Google 翻譯工具列是否已載入 (通常會在 body 上加上 'skiptranslate' class)
-    const isTranslated = document.body.classList.contains('skiptranslate');
-
-    if (isTranslated) {
-        // 如果正在翻譯，強制設定 Header 的位置在 Google Toolbar 下方
-        document.querySelector('header').style.top = '40px';
-    } else {
-        // 如果沒有翻譯，將 Header 設回最頂端
-        document.querySelector('header').style.top = '0';
-    }
-}
-
-// 在翻譯元件載入後和語言切換時執行
-window.addEventListener('load', function() {
-    // 等待 Google 翻譯元件載入
-    setTimeout(handleTranslationChange, 500); 
-});
-document.getElementById('language-select').addEventListener('change', handleTranslationChange);
 
 </script>
 
 
 </body>
 </html>
+
 
