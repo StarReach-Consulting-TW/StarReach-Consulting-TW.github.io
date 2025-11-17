@@ -354,10 +354,11 @@
                                 <th>cust_id</th>
                                 <th>meter_id</th>
                                 <th>Hescode</th>
+                                <th>需量(T/F)</th>
                             </tr>
                         </thead>
                         <tbody id="result-body-compare">
-                            <tr><td colspan="3" style="text-align:center;">結果將顯示於此</td></tr>
+                            <tr><td colspan="4" style="text-align:center;">結果將顯示於此</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -464,7 +465,8 @@
 			
 			// 初始狀態顯示
 			status.style.display = 'block';
-			resultBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">結果將顯示於此</td></tr>';
+			// 🌟 調整 colspan 數量以配合新欄位
+			resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">結果將顯示於此</td></tr>';
 			copyBtn.style.display = 'none';
 			
 			// *** 初始隱藏 XLSX 按鈕 ***
@@ -476,7 +478,9 @@
 			const FIELD_MAPPING = {
 				'meter_id': ['meter_id', '表號'],
 				'cust_id': ['cust_id', '電號'],
-				'hescode': ['hescode'] 
+				'hescode': ['hescode'], 
+                // 🌟 新增: 需量(T/F) 欄位
+                'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
 			};
 			// ************************
 			
@@ -527,7 +531,8 @@
 				// 執行前重置
 				status.textContent = '正在準備處理...';
 				status.style.color = 'blue';
-				resultBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">正在處理中...</td></tr>';
+				// 🌟 調整 colspan 數量以配合新欄位
+				resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">正在處理中...</td></tr>';
 				copyBtn.style.display = 'none';
 				if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; // 重置 XLSX 按鈕
 
@@ -539,7 +544,12 @@
 					const zipNamesSet = await parseZIP(zipFile);
 					
 					status.textContent = '步驟 3/4: 正在比較資料... (資料量大時可能耗時)';
-					const missingEntries = compareData(csvData, zipNamesSet);
+					let missingEntries = compareData(csvData, zipNamesSet);
+					
+					// 🌟 新增：多重條件排序步驟
+					status.textContent = '步驟 3.5/4: 正在依 Hescode 及需量(T/F) 排序...';
+					missingEntries = sortMissingEntries(missingEntries);
+
 
 					status.textContent = '步驟 4/4: 正在產生結果頁面...';
 					displayResults(missingEntries); 
@@ -548,13 +558,13 @@
 					console.error('處理檔案時發生錯誤:', error);
 					status.textContent = `錯誤: ${error.message} (請檢查檔案格式、欄位名稱或是否已下載 jszip.min.js 和 papaparse.min.js)`;
 					status.style.color = 'red';
-					resultBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">${error.message}</td></tr>`;
+					// 🌟 調整 colspan 數量以配合新欄位
+					resultBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">${error.message}</td></tr>`;
 				}
 			}
 
-			// --- 3. 解析 CSV 檔案 (新增 meter_id 轉大寫 - 保持不變) ---
+			// --- 3. 解析 CSV 檔案 (新增 demand 欄位擷取) ---
 			function parseCSV(file, mapping) {
-				// ... (保持上一次修正的程式碼不變)
 				return new Promise((resolve, reject) => {
 					Papa.parse(file, {
 						delimiter: "\t", 
@@ -583,6 +593,9 @@
 								}
 								if (!mappedFields.cust_id) { mappedFields.cust_id = null; }
 								if (!mappedFields.hescode) { mappedFields.hescode = null; }
+                                // 🌟 新增: 檢查 demand 欄位
+                                if (!mappedFields.demand) { mappedFields.demand = null; }
+
 
 								const mappedData = results.data
 									.filter(row => row[mappedFields.meter_id]) 
@@ -593,7 +606,9 @@
 										return {
 											cust_id: mappedFields.cust_id ? (row[mappedFields.cust_id] ? String(row[mappedFields.cust_id]).trim() : '') : '',
 											meter_id: meterId,
-											hescode: mappedFields.hescode ? (row[mappedFields.hescode] ? String(row[mappedFields.hescode]).trim() : '') : ''
+											hescode: mappedFields.hescode ? (row[mappedFields.hescode] ? String(row[mappedFields.hescode]).trim() : '') : '',
+                                            // 🌟 新增: demand 欄位擷取
+                                            demand: mappedFields.demand ? (row[mappedFields.demand] ? String(row[mappedFields.demand]).trim().toUpperCase() : '') : ''
 										};
 									})
 									.filter(item => item !== null);
@@ -612,9 +627,8 @@
 				});
 			}
 
-			// --- 4. 解析 ZIP 檔案 (修正 regex 支援英數字 - 保持不變) ---
+			// --- 4. 解析 ZIP 檔案 (不變) ---
 			async function parseZIP(file) {
-				// ... (保持上一次修正的程式碼不變)
 				const zip = await JSZip.loadAsync(file);
 				const namesSet = new Set();
 				const regex = /<name>([A-Za-z0-9]{10})<\/name>/g; 
@@ -658,8 +672,39 @@
 				});
 				return missing;
 			}
+			
+			// --- 5.5. 新增：多重條件排序 ---
+			function sortMissingEntries(entries) {
+				return entries.sort((a, b) => {
+					// 1. 主要排序鍵: hescode
+					const hescodeA = a.hescode || '';
+					const hescodeB = b.hescode || '';
+					if (hescodeA < hescodeB) return -1;
+					if (hescodeA > hescodeB) return 1;
 
-			// --- 6. 顯示結果 (新增 XLSX 下載按鈕顯示及綁定) ---
+					// 2. 次要排序鍵: demand (需量T/F)
+					// 假設 T > F，或按字串排序 (F 會排在 T 前面，如果您希望 T 在前，則需要額外判斷)
+					const demandA = a.demand || '';
+					const demandB = b.demand || '';
+					
+					// 為了確保一致的 T/F 排序邏輯（T在前，F在後），我們假設 T=True, F=False
+					if (demandA.toUpperCase() === 'T' && demandB.toUpperCase() === 'F') return -1;
+					if (demandA.toUpperCase() === 'F' && demandB.toUpperCase() === 'T') return 1;
+					if (demandA.toUpperCase() < demandB.toUpperCase()) return -1;
+					if (demandA.toUpperCase() > demandB.toUpperCase()) return 1;
+
+					// 3. 備用排序鍵: meter_id
+					const meterA = a.meter_id || '';
+					const meterB = b.meter_id || '';
+					if (meterA < meterB) return -1;
+					if (meterA > meterB) return 1;
+					
+					return 0; // 完全相同
+				});
+			}
+
+
+			// --- 6. 顯示結果 (更新表格、複製、XLSX 邏輯以包含 demand 欄位) ---
 			function displayResults(missingEntries) {
 				resultBody.innerHTML = ''; 
 				currentMissingEntries = missingEntries; // 儲存結果
@@ -668,7 +713,8 @@
 				if (missingEntries.length === 0) {
 					status.textContent = '比對完成：全部符合！ CSV 中的所有 Meter ID 均可在 ZIP 檔案中找到。';
 					status.style.color = 'green';
-					resultBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
+					// 🌟 調整 colspan 數量以配合新欄位
+					resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
 					copyBtn.style.display = 'none';
 					if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; // 隱藏 XLSX 按鈕
 					alert('比對完成：全部符合！'); 
@@ -680,15 +726,17 @@
 				status.style.color = 'darkorange';
 
 				// --- 設定複製按鈕 ---
-				let copyString = "Cust ID\tMeter ID\tHES Code\n";
+                // 🌟 更新複製內容以包含新欄位
+				let copyString = "Cust ID\tMeter ID\tHES Code\t需量(T/F)\n";
 				missingEntries.forEach(entry => {
-					copyString += `${entry.cust_id}\t${entry.meter_id}\t${entry.hescode}\n`;
+					copyString += `${entry.cust_id}\t${entry.meter_id}\t${entry.hescode}\t${entry.demand}\n`;
 				});
 
 				copyBtn.style.display = 'block'; 
 				copyBtn.onclick = () => {
+					// 🌟 更新 alert 訊息
 					navigator.clipboard.writeText(copyString).then(() => {
-						alert(`已複製 ${missingEntries.length} 筆資料到剪貼簿 (包含所有欄位: Cust ID, Meter ID, HES Code)`);
+						alert(`已複製 ${missingEntries.length} 筆資料到剪貼簿 (包含所有欄位: Cust ID, Meter ID, HES Code, 需量(T/F))`);
 					}, (err) => {
 						alert('複製失敗! 請檢查瀏覽器權限。 ' + err);
 					});
@@ -726,21 +774,28 @@
 					tdHescode.textContent = entry.hescode;
 					tr.appendChild(tdHescode);
 					
+                    // 🌟 渲染新的 demand 欄位
+                    const tdDemand = document.createElement('td');
+					tdDemand.textContent = entry.demand;
+					tr.appendChild(tdDemand);
+					
 					resultBody.appendChild(tr);
 				});
 			}
 			
-			// --- 7. 🌟 新增：XLSX 下載功能函式 (需要 SheetJS 支援) ---
+			// --- 7. 🌟 新增：XLSX 下載功能函式 (更新以包含 demand 欄位) ---
 			function downloadXLSX(data) {
 				if (typeof XLSX === 'undefined') {
 					alert('錯誤：缺少 XLSX 函式庫。請確保您的頁面已載入 xlsx.full.min.js');
 					return;
 				}
 
-				const header = ['Cust ID', 'Meter ID', 'HES Code'];
+                // 🌟 更新標頭
+				const header = ['Cust ID', 'Meter ID', 'HES Code', '需量(T/F)'];
 				
 				// 將物件陣列轉換為陣列陣列 (包含標頭)
-				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.hescode])];
+                // 🌟 更新資料對應
+				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.hescode, item.demand])];
 				
 				// 建立工作表
 				const ws = XLSX.utils.aoa_to_sheet(exportData);
@@ -773,7 +828,7 @@
 			const dropArea = document.getElementById('drop-area-xml'); // 假設您的拖曳區塊 ID 為 drop-area-xml
 
 			let cumulativeCsvData = [];
-			const regex = /<name>(..........)</g;
+			const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
 
 			function escapeCsvField(field) {
 				const str = String(field || '');
