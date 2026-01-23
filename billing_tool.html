@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>開票小工具 (v4 - 整合版)</title>
+    <title>開票小工具 (v5 - 整合版)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -25,12 +25,11 @@
             text-align: center;
             margin-bottom: 30px;
         }
-        /* Tab 樣式 */
         .tab-container {
             display: flex;
             border-bottom: 2px solid #ccc;
             margin-bottom: 20px;
-            overflow-x: auto; /* 確保在手機上可以滑動 */
+            overflow-x: auto;
         }
         .tab-link {
             padding: 10px 20px;
@@ -38,8 +37,8 @@
             border: 2px solid transparent;
             border-bottom: none;
             background-color: #c9c9c9;
-            font-size: 16px; /* 稍微縮小字體以容納更多標籤 */
-            white-space: nowrap; /* 防止換行 */
+            font-size: 16px;
+            white-space: nowrap;
             border-radius: 8px 8px 0 0;
             margin-right: 5px;
             position: relative;
@@ -51,7 +50,6 @@
             border-color: #4b4b4b #4b4b4b #fff #4b4b4b;
             z-index: 1;
         }
-        /* 通用內容樣式 */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
@@ -66,6 +64,7 @@
             transition: background-color 0.3s;
         }
         button:hover { background-color: #357ae8; }
+        button:disabled { background-color: #bdc1c6; cursor: not-allowed; }
         .input-container {
             display: flex;
             gap: 15px;
@@ -149,6 +148,13 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
         .action-label {
             display: block; 
             width: 100%; 
@@ -169,7 +175,6 @@
         .options-group label { margin-right: 15px; }
         .options-group p { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
 
-        /* 新增的樣式: 下載連結方格 */
         .download-links-container {
             display: flex;
             gap: 20px;
@@ -198,13 +203,11 @@
             transform: translateY(-2px);
         }
 
-        /* 簡單的下載圖標 */
         .download-link-box::before {
             content: '↓';
             font-size: 20px;
         }
 
-        /* === 工具一 (比對) 的專屬樣式 === */
         #drop-zone {
             border: 3px dashed #ccc;
             border-radius: 15px;
@@ -227,7 +230,6 @@
             margin: 20px auto;
             width: 100%;
         }
-        /* 🌟 修改: 移除 float: right 和 margin-bottom */
         #copy-btn-compare {
             display: none; 
             background-color: #007bff;
@@ -241,7 +243,6 @@
         #copy-btn-compare:hover {
             background-color: #0056b3;
         }
-		/* 🌟 修改: 移除 float: right 和 margin-bottom/margin-right */
 		#download-xlsx-btn-compare {
 			display: none; 
 			background-color: #28a745; 
@@ -253,18 +254,16 @@
 			font-size: 1em;
 		}
 		#download-xlsx-btn-compare:hover {
-			background-color: #1e7e34; /* 懸停時顏色變深 */
+			background-color: #1e7e34;
 		}
-		/* 🌟 新增/調整: 頂部控制列的 Flex 容器 */
         #top-controls-row {
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 20px; 
-            flex-wrap: wrap; /* 允許換行以適應小螢幕 */
+            flex-wrap: wrap;
         }
 
-        /* 🌟 新增/調整: 篩選區塊的樣式 (原內嵌樣式) */
         #filter-controls-compare { 
             display: flex; 
             align-items: center; 
@@ -274,16 +273,14 @@
             border-radius: 5px; 
             flex-grow: 1; 
             min-width: 300px; 
-            max-width: 50%; /* 佔用最多 70% 寬度，讓右側按鈕有空間 */
+            max-width: 50%;
             margin-right: 10px;
         }
         
-        /* 🌟 新增: 篩選區塊中 Label 的樣式 */
         #filter-controls-compare label[for="hescode-filter"] {
-            white-space: nowrap; /* 防止標籤換行 */
+            white-space: nowrap;
         }
         
-        /* 🌟 新增: Hescode Select 框的樣式 */
         #hescode-filter { 
             padding: 5px; 
             border-radius: 3px; 
@@ -292,14 +289,12 @@
             min-width: 100px;
         }
         
-        /* 🌟 新增: 篩選計數的樣式 */
         #filtered-count {
             font-weight: bold; 
             color: #007bff; 
             white-space: nowrap;
         }
 
-        /* 🌟 新增/調整: 按鈕區塊的樣式 */
         #action-buttons-compare {
             display: flex; 
             gap: 10px; 
@@ -344,13 +339,11 @@
 		  align-items: center;
 		}
 
-		/* 檔案拖曳進入時的視覺回饋樣式 */
 		#drop-area-xml.highlight {
-		  border-color: #007bff; /* 藍色邊框 */
-		  background-color: #e6f7ff; /* 淺藍色背景 */
+		  border-color: #007bff;
+		  background-color: #e6f7ff;
 		}
 
-		/* 確保您的按鈕樣式 (如果您使用 label 模擬按鈕的話) */
 		.button {
 			display: inline-block;
 			background-color: #007bff;
@@ -360,9 +353,8 @@
 			cursor: pointer;
 			margin: 5px;
 		}
-        /* 🌟 新增: 自訂訊息提示框 (Custom Alert) 樣式 */
         #custom-alert {
-            visibility: hidden; /* 預設隱藏 */
+            visibility: hidden;
             min-width: 250px;
             margin-left: -125px;
             background-color: #333;
@@ -371,7 +363,7 @@
             padding: 16px;
 			font-weight: bold;
             position: fixed;
-            z-index: 9999; /* 確保在最上層 */
+            z-index: 9999;
             right: 20px;
             top: 50px;
             font-size: 18px;
@@ -385,18 +377,28 @@
             opacity: 1;
         }
 
-        /* 成功訊息的樣式 */
         #custom-alert.success {
-            background-color: #beedc0; /* 綠色 */
+            background-color: #beedc0;
 			border: 2px solid #fff;
 			color: #08730c;
         }
 
-        /* 錯誤訊息的樣式 */
         #custom-alert.error {
-            background-color: #f5beba; /* 紅色 */
+            background-color: #f5beba;
 			border: 2px solid #fff;
 			color: #910b01;
+        }
+
+        .input-group {
+            background: #f1f3f4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
 		
     </style>
@@ -415,13 +417,14 @@
             <button class="tab-link" data-tab="tool-xml">XML 表號解析</button>
             <button class="tab-link" data-tab="tool-zip">ZIP 中繼檔解析</button>
             <button class="tab-link" data-tab="tool-merge-split">例外清單處理</button>
+            <button class="tab-link" data-tab="tool-xml-split">XML 分割工具</button>
         </div>
 
         <div class="content-container">
 
             <div id="tool-compare" class="tab-content active">
                 <div class="warning">
-                    <strong>功能：</strong> 比對 CSV 內 Meter ID 是否存在於 XML 檔案中。
+                    <strong>功能:</strong> 比對 CSV 內 Meter ID 是否存在於 XML 檔案中。
                 </div>
                 <p style="text-align:center;">請<strong>同時</strong>將一個 CSV 檔 和一個 ZIP 檔案拖曳到下方區域</p>
 
@@ -429,7 +432,7 @@
                 
                 <div id="status-compare" class="status">正在等待檔案拖曳...</div> 
 
-                <h3>比較結果 (CSV 中存在，但 ZIP 中找不到 Meter ID)</h3>
+                <h3>比較結果 (CSV 中存在,但 ZIP 中找不到 Meter ID)</h3>
 				
                 <div id="top-controls-row"> 
                     
@@ -467,9 +470,9 @@
 
             <div id="tool-xml" class="tab-content">
                 <div class="warning">
-                    <strong>功能：</strong> 快速擷取資料夾或 ZIP 檔內所有 XML 的表號。
+                    <strong>功能:</strong> 快速擷取資料夾或 ZIP 檔內所有 XML 的表號。
                 </div>
-                <p>請點擊下方按鈕選擇**一個或多個資料夾**，或**一個或多個 .zip 壓縮檔**進行分析。結果會累加顯示於預覽區，並可下載合併後的 CSV 檔案。</p>
+                <p>請點擊下方按鈕選擇**一個或多個資料夾**,或**一個或多個 .zip 壓縮檔**進行分析。結果會累加顯示於預覽區,並可下載合併後的 CSV 檔案。</p>
 
 				<div id="drop-area-xml">
 				  <p>或將 .xml 檔案或 .zip 壓縮檔拖曳至此區域上傳</p>
@@ -482,7 +485,7 @@
 				</div>
                 <button id="clear-btn-xml">清除結果並重新開始</button>
                 <div class="results-header">
-                    <h2>表號預覽：</h2>
+                    <h2>表號預覽:</h2>
                     <button id="copy-btn-xml" style="display: none;">複製結果</button>
                 </div>
 				<div id="status-xml">等待處理...</div>
@@ -492,9 +495,9 @@
 			
             <div id="tool-zip" class="tab-content">
                 <div class="warning">
-                    <strong>功能：</strong> 快速整理中繼檔( MDMSL_YYYMMNN.zip )資料夾內所有電號表號及表別。
+                    <strong>功能:</strong> 快速整理中繼檔( MDMSL_YYYMMNN.zip )資料夾內所有電號表號及表別。
                 </div>			
-                <p>請上傳一個 .zip 壓縮檔。此工具將會對 .txt 檔案內容進行分組與彙總，最終生成一個包含「電號」、「表號」與「表別」的 Excel (.xlsx) 檔案下載連結。</p>
+                <p>請上傳一個 .zip 壓縮檔。此工具將會對 .txt 檔案內容進行分組與彙總,最終生成一個包含「電號」、「表號」與「表別」的 Excel (.xlsx) 檔案下載連結。</p>
         
                 <input type="file" id="zipFile-zip" accept=".zip">
                 
@@ -504,9 +507,9 @@
 
             <div id="tool-merge-split" class="tab-content">
                 <div class="warning">
-                    <strong>功能：</strong> 一次性將多個例外清單合併並整理為 CSV，同時將合併結果根據區處拆分。
+                    <strong>功能:</strong> 一次性將多個例外清單合併並整理為 CSV,同時將合併結果根據區處拆分。
                 </div>
-                <p>請選擇多個來源 <code>.xlsx</code> 檔案，工具會自動完成合併、拆分並產生兩個下載連結。</p>
+                <p>請選擇多個來源 <code>.xlsx</code> 檔案,工具會自動完成合併、拆分並產生兩個下載連結。</p>
         
                 <label for="files-merge-split" class="action-label">選擇多個 Excel (.xlsx) 檔案</label>
                 <input type="file" id="files-merge-split" multiple accept=".xlsx" style="display:none;">
@@ -526,44 +529,46 @@
                 
                 <div id="download-area-merge-split" class="download-links-container" style="display: none;"></div>
             </div>
+
+            <div id="tool-xml-split" class="tab-content">
+                <div class="warning">
+                    <strong>功能:</strong> 將大型 XML 檔案 ( >8 MB ) 分割成多個小檔案。
+                </div>
+
+                <div class="input-group">
+                    <label>1. 選擇 XML 檔案 (可多選):</label>
+                    <input type="file" id="fileInput-split" accept=".xml" multiple>
+                </div>
+
+                <div class="input-group">
+                    <label>2. 每個檔案包含的 meter_id 數量:</label>
+                    <input type="number" id="batchSize-split" value="250" min="1">
+                </div>
+
+                <button id="processBtn-split">開始處理並下載 ZIP</button>
+
+                <div id="status-split" class="status" style="display: none;"></div>
+            </div>
         </div>
     </div>
 	
 	<div id="custom-alert"></div>
 
     <script>
-        // =========================================================================
-        // --- 🌟 全域: 自訂訊息提示框 (Custom Alert) 函數 ---
-        // =========================================================================
         let alertTimeout;
 
-        /**
-         * 顯示自訂訊息提示框 (Toast/Snackbar)
-         * @param {string} message - 要顯示的訊息內容。
-         * @param {'success' | 'error' | 'info'} type - 訊息類型，影響背景顏色。
-         */
         function showCustomAlert(message, type = 'info') {
             const alertBox = document.getElementById('custom-alert');
-            
-            // 清除現有的計時器，避免多個訊息同時出現
             clearTimeout(alertTimeout);
-            
-            // 設置內容和樣式
             alertBox.textContent = message;
-            alertBox.className = ''; // 清除所有舊類別
+            alertBox.className = '';
             alertBox.classList.add(type);
             alertBox.classList.add('show');
-            
-            // 設置自動隱藏
             alertTimeout = setTimeout(() => {
                 alertBox.classList.remove('show');
-            }, 3000); // 3 秒後隱藏
+            }, 3000);
         }
 
-
-        // =========================================================================
-        // --- 頁籤切換總控制 ---
-        // =========================================================================
         function setupTabs(tabLinksSelector, tabContentSelector) {
             const tabs = document.querySelectorAll(tabLinksSelector);
             const contents = document.querySelectorAll(tabContentSelector);
@@ -584,58 +589,42 @@
 
         
         // =========================================================================
-        // --- 工具一: CSV/XML 表號比對邏輯 (新功能) ---
+        // --- 工具一: CSV/XML 表號比對邏輯 ---
         // =========================================================================
 		(function() {
-			// 所有 ID 帶上 -compare 後綴
 			const dropZone = document.getElementById('drop-zone');
 			const status = document.getElementById('status-compare');
 			const resultBody = document.getElementById('result-body-compare');
 			const copyBtn = document.getElementById('copy-btn-compare');
-			
-			// *** 新增：XLSX 下載按鈕 DOM 元素 ***
 			const downloadXlsxBtn = document.getElementById('download-xlsx-btn-compare'); 
-            
-            // 🌟 新增：篩選相關 DOM 元素
             const hescodeFilter = document.getElementById('hescode-filter'); 
             const filteredCountSpan = document.getElementById('filtered-count');
 
-			// 初始狀態顯示
 			status.style.display = 'block';
 			resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">結果將顯示於此</td></tr>';
 			copyBtn.style.display = 'none';
 			
-			// *** 初始隱藏 XLSX 按鈕 ***
 			if (downloadXlsxBtn) {
 				downloadXlsxBtn.style.display = 'none';
 			}
             
-            // 🌟 清空篩選器
             if (hescodeFilter) {
                 hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
             }
 
-			// *** 新增欄位別名定義 ***
 			const FIELD_MAPPING = {
 				'meter_id': ['meter_id', '表號'],
 				'cust_id': ['cust_id', '電號'],
 				'hescode': ['hescode'], 
-                // 🌟 新增: 需量(T/F) 欄位
                 'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
 			};
-			// ************************
 			
-			// 儲存比對結果，供下載使用
-			// 🌟 儲存**所有**未篩選的結果
 			let allMissingEntries = []; 
-            // 🌟 儲存**目前**篩選後的結果
             let currentFilteredEntries = [];
 
-            // --- 🌟 新增：Fallback 複製函數 (解決 file:// 或非 HTTPS 環境複製失敗問題) ---
             function copyFallback(text) {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
-                // 隱藏元素以避免影響佈局
                 textarea.style.position = 'fixed';
                 textarea.style.top = '0';
                 textarea.style.left = '0';
@@ -646,7 +635,6 @@
                 try {
                     textarea.focus();
                     textarea.select();
-                    // 執行複製指令 (這是舊版且在非 HTTPS 環境下最可靠的方式)
                     success = document.execCommand('copy');
                 } catch (err) {
                     console.error('Fallback copy failed:', err);
@@ -655,9 +643,7 @@
                 document.body.removeChild(textarea);
                 return success;
             }
-            // --- 🌟 Fallback 函數結束 ---
 
-			// --- 1. 設定拖曳事件監聽 (不變) ---
 			dropZone.addEventListener('dragover', (e) => {
 				e.preventDefault(); 
 				dropZone.classList.add('dragover');
@@ -672,20 +658,17 @@
 				handleFiles(e.dataTransfer.files);
 			});
             
-            // --- 6.3 🌟 新增：篩選器變更事件監聽 ---
             if (hescodeFilter) {
                 hescodeFilter.addEventListener('change', (e) => {
-                    // 只有在有資料時才進行篩選
                     if (allMissingEntries.length > 0) {
                         filterAndDisplayResults(allMissingEntries, e.target.value);
                     }
                 });
             }
 
-			// --- 2. 處理拖放的檔案 (不變) ---
 			async function handleFiles(files) {
 				if (files.length !== 2) {
-					status.textContent = '錯誤：請務必同時拖曳 2 個檔案 (一個 CSV/TSV 和一個 ZIP)';
+					status.textContent = '錯誤:請務必同時拖曳 2 個檔案 (一個 CSV/TSV 和一個 ZIP)';
 					status.style.color = 'red';
 					return;
 				}
@@ -703,17 +686,16 @@
 				}
 
 				if (!csvFile || !zipFile) {
-					status.textContent = '錯誤：必須包含一個 .zip 檔案和一個 .csv (或 .tsv, .txt) 檔案';
+					status.textContent = '錯誤:必須包含一個 .zip 檔案和一個 .csv (或 .tsv, .txt) 檔案';
 					status.style.color = 'red';
 					return;
 				}
 
-				// 執行前重置
 				status.textContent = '正在準備處理...';
 				status.style.color = 'blue';
 				resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">正在處理中...</td></tr>';
 				copyBtn.style.display = 'none';
-				if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; // 重置 XLSX 按鈕
+				if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none';
                 if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
                 if (filteredCountSpan) filteredCountSpan.textContent = '';
 
@@ -728,7 +710,6 @@
 					status.textContent = '步驟 3/4: 正在比較資料... (資料量大時可能耗時)';
 					let missingEntries = compareData(csvData, zipNamesSet);
 					
-					// 🌟 新增：多重條件排序步驟
 					status.textContent = '步驟 3.5/4: 正在依 Hescode 及需量(T/F) 排序...';
 					missingEntries = sortMissingEntries(missingEntries);
 
@@ -744,7 +725,6 @@
 				}
 			}
 
-			// --- 3. 解析 CSV 檔案 (新增 demand 欄位擷取) (保持不變) ---
 			function parseCSV(file, mapping) {
 				return new Promise((resolve, reject) => {
 					Papa.parse(file, {
@@ -792,7 +772,7 @@
 									})
 									.filter(item => item !== null);
 
-								console.log(`CSV 讀取完畢，共 ${mappedData.length} 筆有效資料。已自動配對的欄位:`, mappedFields);
+								console.log(`CSV 讀取完畢,共 ${mappedData.length} 筆有效資料。已自動配對的欄位:`, mappedFields);
 								resolve(mappedData);
 
 							} catch (e) {
@@ -806,7 +786,6 @@
 				});
 			}
 
-			// --- 4. 解析 ZIP 檔案 (保持不變) ---
 			async function parseZIP(file) {
 				const zip = await JSZip.loadAsync(file);
 				const namesSet = new Set();
@@ -840,11 +819,10 @@
 					}
 				}
 				
-				console.log(`ZIP 讀取完畢，共找到 ${namesSet.size} 個唯一的 <name> ID`);
+				console.log(`ZIP 讀取完畢,共找到 ${namesSet.size} 個唯一的 <name> ID`);
 				return namesSet;
 			}
 
-			// --- 5. 比較資料 (保持不變) ---
 			function compareData(csvData, zipNamesSet) {
 				const missing = csvData.filter(csvRow => {
 					return csvRow && csvRow.meter_id && !zipNamesSet.has(csvRow.meter_id);
@@ -852,78 +830,64 @@
 				return missing;
 			}
 			
-			// --- 5.5. 多重條件排序 (保持不變) ---
 			function sortMissingEntries(entries) {
 				return entries.sort((a, b) => {
-					// 1. 主要排序鍵: hescode
 					const hescodeA = a.hescode || '';
 					const hescodeB = b.hescode || '';
 					if (hescodeA < hescodeB) return -1;
 					if (hescodeA > hescodeB) return 1;
 
-					// 2. 次要排序鍵: demand (需量T/F)
 					const demandA = a.demand || '';
 					const demandB = b.demand || '';
 					
-					// 為了確保一致的 T/F 排序邏輯（T在前，F在後）
 					if (demandA.toUpperCase() === 'T' && demandB.toUpperCase() === 'F') return -1;
 					if (demandA.toUpperCase() === 'F' && demandB.toUpperCase() === 'T') return 1;
 					if (demandA.toUpperCase() < demandB.toUpperCase()) return -1;
 					if (demandA.toUpperCase() > demandB.toUpperCase()) return 1;
 
-					// 3. 備用排序鍵: meter_id
 					const meterA = a.meter_id || '';
 					const meterB = b.meter_id || '';
 					if (meterA < meterB) return -1;
 					if (meterA > meterB) return 1;
 					
-					return 0; // 完全相同
+					return 0;
 				});
 			}
 
 
-			// --- 6. 顯示結果 (更新以處理篩選邏輯) ---
 			function displayResults(missingEntries) {
                 
-                // 處理全部符合的情況
 				if (missingEntries.length === 0) {
-					status.textContent = '比對完成：全部符合！ CSV 中的所有 Meter ID 均可在 ZIP 檔案中找到。';
+					status.textContent = '比對完成:全部符合! CSV 中的所有 Meter ID 均可在 ZIP 檔案中找到。';
 					status.style.color = 'green';
 					resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
 					copyBtn.style.display = 'none';
 					if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
-                    // 🌟 清空篩選器
                     if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
 					if (filteredCountSpan) filteredCountSpan.textContent = '';
-					showCustomAlert('比對完成：全部符合！', 'success'); // 🌟 替換 alert
+					showCustomAlert('比對完成:全部符合!', 'success');
 					return;
 				}
                 
-                // 儲存**所有**結果 (已排序)
                 allMissingEntries = missingEntries; 
                 
-                // 1. 更新狀態
-				status.textContent = `比對完成：在 CSV 中找到 ${allMissingEntries.length} 筆資料不存在於 ZIP 檔案中。`;
+				status.textContent = `比對完成:在 CSV 中找到 ${allMissingEntries.length} 筆資料不存在於 ZIP 檔案中。`;
 				status.style.color = 'darkorange';
 
-                // 2. 🌟 填充篩選器並應用初始篩選（全部）
                 populateHescodeFilter(allMissingEntries);
-                filterAndDisplayResults(allMissingEntries, hescodeFilter.value); // 預設篩選所有
+                filterAndDisplayResults(allMissingEntries, hescodeFilter.value);
 
-				// 3. 🌟 設定 XLSX 下載按鈕 (維持下載全部)
 				if (downloadXlsxBtn) {
-					downloadXlsxBtn.style.display = 'inline-block'; // 調整為 inline-block 配合 Flexbox
+					downloadXlsxBtn.style.display = 'inline-block';
 					downloadXlsxBtn.onclick = () => {
-						downloadXLSX(allMissingEntries); // 下載 **所有** 差異資料
+						downloadXLSX(allMissingEntries);
 					};
 				}
 			}
             
-            // --- 6.1 🌟 新增：填充 Hescode 篩選器 ---
             function populateHescodeFilter(entries) {
                 const uniqueHescodes = new Set();
                 entries.forEach(entry => {
-                    // 確保只加入有效的 hescode
                     if (entry.hescode && String(entry.hescode).trim() !== '') {
                         uniqueHescodes.add(entry.hescode);
                     }
@@ -937,10 +901,9 @@
                 });
                 
                 hescodeFilter.innerHTML = optionsHtml;
-                hescodeFilter.value = 'all'; // 重設為 '所有'
+                hescodeFilter.value = 'all';
             }
 
-            // --- 6.2 🌟 修正：篩選並顯示結果到表格 (同時更新複製按鈕邏輯) ---
             function filterAndDisplayResults(allEntries, selectedHescode) {
                 let entriesToDisplay = allEntries;
                 
@@ -948,80 +911,64 @@
                     entriesToDisplay = allEntries.filter(entry => entry.hescode === selectedHescode);
                 }
                 
-                // 🌟 儲存篩選後的結果供複製功能使用
                 currentFilteredEntries = entriesToDisplay; 
                 
-                // 更新計數顯示
                 if (filteredCountSpan) filteredCountSpan.textContent = `(共 ${currentFilteredEntries.length} 筆)`;
                 
-                // --- 🌟 設定複製按鈕 (僅複製篩選後的電號+表號，**不含標題**) ---
                 let copyString = ""; 
                 currentFilteredEntries.forEach(entry => {
-                    // 確保即使沒有 cust_id，仍以 tab 分隔
                     const custId = entry.cust_id || '';
                     const meterId = entry.meter_id || '';
                     copyString += `${custId}\t${meterId}\n`;
                 });
                 
-                copyBtn.style.display = 'inline-block'; // 調整為 inline-block 配合 Flexbox
+                copyBtn.style.display = 'inline-block';
                 
-                // 🌟 修正複製邏輯：優先使用 Clipboard API，失敗則使用 Fallback
                 copyBtn.onclick = () => {
                     if (currentFilteredEntries.length === 0) {
-                        showCustomAlert('目前篩選結果為空，無法複製。', 'error'); 
+                        showCustomAlert('目前篩選結果為空,無法複製。', 'error'); 
                         return;
                     }
 
-                    // 1. 嘗試使用現代 Clipboard API
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(copyString).then(() => {
                             showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
                         }, (err) => {
-                            console.warn("Clipboard API 失敗，嘗試 Fallback 複製...", err);
-                            // 2. Clipboard API 失敗，嘗試 Fallback 複製
+                            console.warn("Clipboard API 失敗,嘗試 Fallback 複製...", err);
                             if (copyFallback(copyString)) {
                                 showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
                             } else {
-                                // 3. Fallback 也失敗
                                 showCustomAlert('複製失敗! 請檢查瀏覽器權限或嘗試手動複製。', 'error'); 
                             }
                         });
                     } else {
-                        // 1. 瀏覽器不支援 Clipboard API，直接使用 Fallback
                         if (copyFallback(copyString)) {
                             showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
                         } else {
-                            // 2. Fallback 失敗
-                            showCustomAlert('複製失敗! 瀏覽器不支援自動複製，請手動複製結果。', 'error'); 
+                            showCustomAlert('複製失敗! 瀏覽器不支持自動複製,請手動複製結果。', 'error'); 
                         }
                     }
                 };
-                // --- 複製邏輯修正結束 ---
                 
-                // --- 渲染表格 ---
                 resultBody.innerHTML = ''; 
                 
                 if (entriesToDisplay.length === 0) {
                     resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無符合篩選條件的資料</td></tr>';
-                    // 隱藏複製/下載按鈕
                     copyBtn.style.display = 'none';
                     if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
                     return;
                 }
                 
-                // ... (渲染邏輯保持不變) ...
                 const RENDER_LIMIT = 1000;
 				const entriesToRender = entriesToDisplay.slice(0, RENDER_LIMIT);
 				
-				// 確保狀態列正確顯示總數
 				let currentStatusText = status.textContent.split(' (為防止')[0];
 				if (entriesToDisplay.length > RENDER_LIMIT) {
-					currentStatusText += ` (為防止瀏覽器當機，頁面僅顯示前 ${RENDER_LIMIT} 筆，但 "一鍵複製" 和 "下載 XLSX" 功能會包含所有 ${entriesToDisplay.length} 筆)`;
+					currentStatusText += ` (為防止瀏覽器當機,頁面僅顯示前 ${RENDER_LIMIT} 筆,但 "一鍵複製" 和 "下載 XLSX" 功能會包含所有 ${entriesToDisplay.length} 筆)`;
 				}
 				status.textContent = currentStatusText;
 
 
-				// 渲染資料
 				entriesToRender.forEach(entry => {
 					const tr = document.createElement('tr');
 					
@@ -1045,14 +992,12 @@
 				});
             }
 			
-			// --- 7. 下載 XLSX (維持下載全部) ---
 			function downloadXLSX(data) {
 				if (typeof XLSX === 'undefined') {
-					showCustomAlert('錯誤：缺少 XLSX 函式庫。請確保您的頁面已載入 xlsx.full.min.js', 'error'); // 🌟 替換 alert
+					showCustomAlert('錯誤:缺少 XLSX 函式庫。請確保您的頁面已載入 xlsx.full.min.js', 'error');
 					return;
 				}
 
-                // 🌟 使用傳入的 data (allMissingEntries)
 				const header = ['Cust ID', 'Meter ID', 'HES Code', '需量(T/F)'];
 				
 				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.hescode, item.demand])];
@@ -1063,7 +1008,7 @@
 				
 				const date = new Date().toISOString().slice(0, 10);
 				XLSX.writeFile(wb, `比對差異結果_${date}.xlsx`);
-                showCustomAlert('XLSX 檔案已開始下載！', 'success');
+                showCustomAlert('XLSX 檔案已開始下載!', 'success');
 			}
 
 		})();
@@ -1072,7 +1017,6 @@
         // --- 工具二: XML 表號解析邏輯 ---
         // =========================================================================
 		(function() {
-			// 原始元素
 			const folderInput = document.getElementById('folder-input-xml');
 			const zipInput = document.getElementById('zip-input-xml');
 			const clearBtn = document.getElementById('clear-btn-xml');
@@ -1081,8 +1025,7 @@
 			const resultsDisplayElement = document.getElementById('results-display-xml');
 			const copyBtn = document.getElementById('copy-btn-xml');
 
-			// **新增：拖曳區域的 DOM 元素**
-			const dropArea = document.getElementById('drop-area-xml'); // 假設您的拖曳區塊 ID 為 drop-area-xml
+			const dropArea = document.getElementById('drop-area-xml');
 
 			let cumulativeCsvData = [];
 			const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
@@ -1129,7 +1072,6 @@
 
 			async function processZipFile(file, tempData) {
 				const content = await file.arrayBuffer();
-				// 🚨 確保您的頁面已載入 JSZip 函式庫，否則這裡會報錯
 				const zip = await JSZip.loadAsync(content); 
 				const xmlFilePromises = [];
 				zip.forEach((_, zipEntry) => {
@@ -1153,7 +1095,6 @@
 					if (file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip')) {
 						processingPromises.push(processZipFile(file, tempData));
 					} else if (file.name.toLowerCase().endsWith('.xml')) {
-						// 拖曳上傳的檔案通常沒有 webkitRelativePath，因此使用 '單一檔案/拖曳' 作為來源區分
 						const source = file.webkitRelativePath.split('/')[0] || '拖曳上傳'; 
 						const promise = file.text().then(content => {
 							processXmlContent(content, source, file.webkitRelativePath || file.name, tempData);
@@ -1163,13 +1104,10 @@
 				}
 				await Promise.all(processingPromises);
 				cumulativeCsvData = cumulativeCsvData.concat(tempData);
-				statusElement.textContent = `處理完成！本次新增 ${tempData.length} 筆結果，總共 ${cumulativeCsvData.length} 筆。`;
+				statusElement.textContent = `處理完成!本次新增 ${tempData.length} 筆結果,總共 ${cumulativeCsvData.length} 筆。`;
 				updateUIWithResults();
 			}
 
-			// ====================================================================
-			// 🌟 新增：拖曳上傳功能
-			// ====================================================================
 			function preventDefaults(e) {
 				e.preventDefault();
 				e.stopPropagation();
@@ -1179,17 +1117,14 @@
 				const dt = e.dataTransfer;
 				const files = dt.files;
 				
-				// 呼叫現有的檔案處理邏輯
 				handleSelection(files);
 			}
 
 			if (dropArea) {
-				// 1. 防止瀏覽器開啟拖曳進來的檔案（預設行為）
 				['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
 					dropArea.addEventListener(eventName, preventDefaults, false);
 				});
 
-				// 2. 提供視覺回饋：滑鼠在上方時變亮
 				['dragenter', 'dragover'].forEach(eventName => {
 					dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
 				});
@@ -1197,13 +1132,9 @@
 					dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
 				});
 
-				// 3. 處理放下檔案
 				dropArea.addEventListener('drop', handleDrop, false);
 			}
-			// ====================================================================
 
-
-			// 原始的事件監聽器保持不變
 			folderInput.addEventListener('change', (e) => handleSelection(e.target.files));
 			zipInput.addEventListener('change', (e) => handleSelection(e.target.files));
 
@@ -1214,11 +1145,11 @@
 			});
 			
 			copyBtn.addEventListener('click', async () => {
-				if (!navigator.clipboard) { alert('您的瀏覽器不支援複製功能。'); return; }
+				if (!navigator.clipboard) { alert('您的瀏覽器不支持複製功能。'); return; }
 				const originalText = copyBtn.textContent;
 				try {
 					await navigator.clipboard.writeText(resultsDisplayElement.textContent);
-					copyBtn.textContent = '已複製！';
+					copyBtn.textContent = '已複製!';
 				} catch (err) { copyBtn.textContent = '複製失敗'; } 
 				finally { setTimeout(() => { copyBtn.textContent = originalText; }, 2000); }
 			});
@@ -1283,7 +1214,7 @@
                                     }
                                 }
                             }
-                            statusElement.textContent = '擷取完成，正在進行分組與彙總...';
+                            statusElement.textContent = '擷取完成,正在進行分組與彙總...';
                             const groupedData = new Map();
                             for (const item of rawData) {
                                 const compositeKey = `${item.denGo}|${item.hyoGo}`;
@@ -1306,16 +1237,16 @@
                                 validCount++;
                             }
                             if (validCount > 0) {
-                                statusElement.textContent = `處理完成！共產生 ${validCount} 筆分組資料，正在生成 Excel 檔案...`;
+                                statusElement.textContent = `處理完成!共產生 ${validCount} 筆分組資料,正在生成 Excel 檔案...`;
                                 generateExcelDownloadLink(excelData, 'grouped_data.xlsx');
                             } else {
-                                statusElement.textContent = '處理完成，但在所有 .txt 檔案中均未找到符合條件的內容。';
+                                statusElement.textContent = '處理完成,但在所有 .txt 檔案中均未找到符合條件的內容。';
                             }
                         } catch (err) {
-                            handleError('處理 ZIP 檔案時發生錯誤，請確認檔案格式是否正確。', err);
+                            handleError('處理 ZIP 檔案時發生錯誤,請確認檔案格式是否正確。', err);
                         }
                     };
-                    reader.onerror = () => { handleError('讀取檔案失敗！'); };
+                    reader.onerror = () => { handleError('讀取檔案失敗!'); };
                     reader.readAsArrayBuffer(file);
                 } catch (err) { handleError('發生預期外的錯誤。', err); }
             });
@@ -1332,7 +1263,6 @@
 			const downloadArea = document.getElementById('download-area-merge-split');
 			const specifiedDateInput = document.getElementById('specified-date-merge-split');
 
-			// 區處對應表
 			const sectionMap = { "00":"北市區處", "01":"北南區處", "02":"基隆區處", "03":"宜蘭區處", "04":"桃園區處", "05":"北西區處", "06":"新竹區處", "07":"台中區處", "08":"彰化區處", "09":"嘉義區處", "10":"台南區處", "11":"高雄區處", "12":"屏東區處", "13":"花蓮區處", "14":"台東區處", "15":"澎湖區處", "16":"北北區處", "17":"南投區處", "18":"鳳山區處", "19":"雲林區處", "20":"新營區處", "21":"苗栗區處", "22":"金門區處", "23":"馬祖區處" };
 
 			function escapeCsvField(field) {
@@ -1344,14 +1274,12 @@
 				return str;
 			}
 			
-			// 處理日期輸入框的啟用/禁用狀態
 			document.querySelectorAll('input[name="date-option-merge-split"]').forEach(radio => {
 				radio.addEventListener('change', (e) => {
 					specifiedDateInput.disabled = e.target.value !== 'specify';
 				});
 			});
 
-			// 顯示已選檔案數量
 			fileInput.addEventListener('change', (e) => {
 				const files = e.target.files;
 				if (files && files.length > 0) {
@@ -1364,26 +1292,25 @@
 			startBtn.addEventListener('click', async () => {
 				const files = fileInput.files;
 				if (!files || files.length === 0) {
-					showCustomAlert('請先選擇要處理的 Excel 檔案！', 'error');
+					showCustomAlert('請先選擇要處理的 Excel 檔案!', 'error');
 					return;
 				}
 				
 				const isSpecifyDate = document.getElementById('date-specify-merge-split').checked;
 				const specifiedDate = specifiedDateInput.value;
 				if (isSpecifyDate && !specifiedDate) {
-					showCustomAlert('若選擇「指定日期」，請務必填寫日期！', 'error');
+					showCustomAlert('若選擇「指定日期」,請務必填寫日期!', 'error');
 					return;
 				}
 
 				statusDiv.style.display = 'block';
-				statusDiv.textContent = `步驟 1/3: 正在讀取 ${files.length} 個檔案...`; // 更改步驟數
+				statusDiv.textContent = `步驟 1/3: 正在讀取 ${files.length} 個檔案...`;
 				downloadArea.style.display = 'none';
 
 				try {
-					// --- 步驟 1: 讀取所有資料並附加檔案修改時間 ---
 					let rawDataWithTime = [];
 					const fileReadPromises = Array.from(files).map(file => {
-						const fileModifiedTime = file.lastModified; // 獲取檔案的最後修改時間作為判斷新舊的依據
+						const fileModifiedTime = file.lastModified;
 						
 						return new Promise((resolve, reject) => {
 							const reader = new FileReader();
@@ -1391,11 +1318,8 @@
 								try {
 									const wb = XLSX.read(e.target.result, { type: 'array' });
 									const ws = wb.Sheets[wb.SheetNames[0]];
-									// header: 1 讓輸出為 Array of Arrays
 									const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-									// 假設資料從第 5 行 (索引 4) 開始
 									if (data.length > 4) {
-										// 將資料與檔案修改時間一起儲存
 										data.slice(4).forEach(row => {
 											rawDataWithTime.push({
 												data: row,
@@ -1414,7 +1338,6 @@
 
 					statusDiv.textContent = `步驟 2/3: 正在合併、清洗並去重 ${rawDataWithTime.length} 筆資料...`;
 
-					// --- 步驟 2: 清洗、格式化與去重 (新增去重邏輯) ---
 					const today = new Date();
 					const y = today.getFullYear();
 					const m = String(today.getMonth() + 1).padStart(2, '0');
@@ -1422,11 +1345,10 @@
 					const todayStr = `${y}-${m}-${d}`;
 					const billingDate = isSpecifyDate ? specifiedDate : todayStr;
 					
-					// Map 來追蹤唯一的 key (電號_表號)
 					const uniqueDataMap = new Map(); 
 
 					rawDataWithTime
-						.filter(item => item.data && item.data[0] && String(item.data[0]).trim() !== '') // 確保電號欄位不為空
+						.filter(item => item.data && item.data[0] && String(item.data[0]).trim() !== '')
 						.forEach(item => {
 							const row = item.data;
 							const lastModified = item.lastModified;
@@ -1434,39 +1356,34 @@
 							const custNo = String(row[0] || '');
 							const meterNo = String(row[1] || '');
 							
-							// 格式化 cust_no 為 11 位數 (左邊補 0)
 							const finalCustNo = ('00000000000' + custNo).slice(-11);
 							
 							const key = `${finalCustNo}_${meterNo}`;
 
-							// exception_code 預設為 1
 							const exceptionCode = (row[3] === null || row[3] === undefined || row[3] === '') ? 1 : row[3];
 							
 							const newRow = [
 								finalCustNo, 
-								row[1], // meter_no
-								row[2], // address
+								row[1],
+								row[2],
 								exceptionCode, 
-								row[4], // description
+								row[4],
 								billingDate,
-								lastModified // 紀錄時間戳記，用於比較新舊
+								lastModified
 							];
 							
-							// 去重邏輯：如果 key 不存在，或當前 row 的時間戳記比已存在的 row 新，則覆蓋
 							if (!uniqueDataMap.has(key) || uniqueDataMap.get(key)[6] < lastModified) {
 								uniqueDataMap.set(key, newRow);
 							}
 						});
 
-					// 將 Map 轉換回陣列，並移除最後一個時間戳記欄位
 					let processedData = Array.from(uniqueDataMap.values()).map(row => row.slice(0, 6)); 
 					
 					if (processedData.length === 0) {
-						statusDiv.textContent = '處理完成，但沒有找到有效資料。請確認您的檔案格式 (資料應從第 5 行開始)。';
+						statusDiv.textContent = '處理完成,但沒有找到有效資料。請確認您的檔案格式 (資料應從第 5 行開始)。';
 						return;
 					}
 
-					// 產生 exception.csv 下載連結
 					const csvHeaders = ["cust_no", "meter_no", "address", "exception_code", "description", "billing_date"];
 					const csvContent = [csvHeaders, ...processedData].map(row => row.map(escapeCsvField).join(",")).join("\n");
 					const csvBlob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8-sig' });
@@ -1474,17 +1391,16 @@
 					
 					statusDiv.textContent = `步驟 3/3: 正在根據區處拆分 ${processedData.length} 筆去重後資料...`;
 
-					// --- 步驟 3: 拆分資料並生成 ZIP (保持不變) ---
 					const dataWithSection = processedData.map(row => {
 						const custNo = String(row[0] || '');
 						const sectionCode = custNo.substring(0, 2);
 						const sectionName = sectionMap[sectionCode] || '未知區處';
 						const newRow = [...row];
 						newRow.push(sectionName);
-						return newRow; // 包含 7 個欄位，最後一個是 sectionName
+						return newRow;
 					});
 					
-					const sections = [...new Set(dataWithSection.map(row => row[6]))]; // row[6] 是 sectionName
+					const sections = [...new Set(dataWithSection.map(row => row[6]))];
 					const zip = new JSZip();
 
 					const reportDate = new Date(billingDate);
@@ -1501,25 +1417,21 @@
 							const sectionCode = Object.keys(sectionMap).find(key => sectionMap[key] === section) || "XX";
 
 							const header1 = ["低壓AMI抄表例外清單", null, null, null, null];
-							const header2 = [`區處：[${sectionCode}]${section}`, null, null, null, null];
-							const header3 = [`抄表日：${rocDateStr}`, null, null, null, null];
-							// 擷取前 5 欄 (電號, 表號, 地址, 代號, 備註)
+							const header2 = [`區處:[${sectionCode}]${section}`, null, null, null, null];
+							const header3 = [`抄表日:${rocDateStr}`, null, null, null, null];
 							const sheetData = [header1, header2, header3, excelHeaders, ...sectionData.map(row => row.slice(0, 5))];
 
 							const wb = XLSX.utils.book_new();
 							const ws = XLSX.utils.aoa_to_sheet(sheetData, { cellDates: false });
 							
-							// 合併儲存格
 							ws['!merges'] = [
 								{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
 								{ s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
 								{ s: { r: 2, c: 0 }, e: { r: 2, c: 4 } }
 							];
 							
-							// 設定欄寬
 							ws['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 40 }, { wch: 15 }, { wch: 20 }];
 							
-							// 設定標頭對齊方式 (居中/靠左)
 							if(ws['A1']) ws['A1'].s = { alignment: { horizontal: "center", vertical: "center" } };
 							if(ws['A2']) ws['A2'].s = { alignment: { horizontal: "left", vertical: "center" } };
 							if(ws['A3']) ws['A3'].s = { alignment: { horizontal: "left", vertical: "center" } };
@@ -1533,7 +1445,7 @@
 					const zipBlob = await zip.generateAsync({ type: "blob" });
 					const zipUrl = URL.createObjectURL(zipBlob);
 
-					statusDiv.textContent = `處理完成！共產生 ${processedData.length} 筆去重後的資料。`;
+					statusDiv.textContent = `處理完成!共產生 ${processedData.length} 筆去重後的資料。`;
 					downloadArea.innerHTML = `
 						<a href="${csvUrl}" download="exception.csv" class="download-link-box">下載合併後的 exception.csv</a>
 						<a href="${zipUrl}" download="reports.zip" class="download-link-box">下載拆分的例外清單 (${sections.length} 區處)</a>
@@ -1546,8 +1458,145 @@
 				}
 			});
 		})();
+
+        // =========================================================================
+        // --- 工具五: XML 分割工具邏輯 ---
+        // =========================================================================
+        (function() {
+            const processBtn = document.getElementById('processBtn-split');
+            const fileInput = document.getElementById('fileInput-split');
+            const status = document.getElementById('status-split');
+
+            // 格式化 XML 函數：維持階層及換行關係
+            function formatXML(node, indent = 0) {
+                const indentStr = '  '.repeat(indent);
+                let result = '';
+
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = node.nodeName;
+                    const attributes = Array.from(node.attributes || [])
+                        .map(attr => ` ${attr.name}="${attr.value}"`)
+                        .join('');
+                    
+                    const children = Array.from(node.childNodes);
+                    const hasElementChildren = children.some(child => child.nodeType === Node.ELEMENT_NODE);
+                    const textContent = children
+                        .filter(child => child.nodeType === Node.TEXT_NODE)
+                        .map(child => child.nodeValue.trim())
+                        .filter(text => text.length > 0)
+                        .join('');
+
+                    if (children.length === 0) {
+                        result = `${indentStr}<${tagName}${attributes}/>\n`;
+                    } else if (!hasElementChildren && textContent) {
+                        result = `${indentStr}<${tagName}${attributes}>${textContent}</${tagName}>\n`;
+                    } else {
+                        result = `${indentStr}<${tagName}${attributes}>\n`;
+                        children.forEach(child => {
+                            if (child.nodeType === Node.ELEMENT_NODE) {
+                                result += formatXML(child, indent + 1);
+                            }
+                        });
+                        result += `${indentStr}</${tagName}>\n`;
+                    }
+                }
+
+                return result;
+            }
+
+            processBtn.addEventListener('click', async () => {
+                const files = fileInput.files;
+                const batchSize = parseInt(document.getElementById('batchSize-split').value);
+                
+                if (!files.length) {
+                    showCustomAlert('請選擇檔案', 'error');
+                    return;
+                }
+
+                processBtn.disabled = true;
+                status.style.display = 'block';
+                status.className = 'status';
+                status.innerText = '正在處理中,請稍候...';
+
+                const zip = new JSZip();
+                const parser = new DOMParser();
+
+                try {
+                    for (let f = 0; f < files.length; f++) {
+                        const file = files[f];
+                        const text = await file.text();
+                        const xmlDoc = parser.parseFromString(text, "application/xml");
+
+                        if (xmlDoc.getElementsByTagName("parsererror").length) {
+                            console.error(`檔案 ${file.name} 解析失敗`);
+                            continue;
+                        }
+
+                        const root = xmlDoc.documentElement;
+                        const rootNamespace = root.namespaceURI;
+                        const rootAttributes = Array.from(root.attributes || []);
+                        
+                        const headerNode = root.getElementsByTagName("Header")[0];
+                        const meterReadingNodes = Array.from(xmlDoc.getElementsByTagName("MeterReading"));
+                        const meterReadingsContainer = xmlDoc.getElementsByTagName("MeterReadings")[0];
+                        const mrNamespace = meterReadingsContainer ? meterReadingsContainer.getAttribute("xmlns") : "http://iec.ch/TC57/2011/MeterReadings#";
+
+                        let partIndex = 1;
+                        for (let i = 0; i < meterReadingNodes.length; i += batchSize) {
+                            const batch = meterReadingNodes.slice(i, i + batchSize);
+                            
+                            const newDoc = document.implementation.createDocument(rootNamespace, root.nodeName, null);
+                            const newRoot = newDoc.documentElement;
+
+                            rootAttributes.forEach(attr => {
+                                newRoot.setAttribute(attr.name, attr.value);
+                            });
+
+                            if (headerNode) {
+                                newRoot.appendChild(newDoc.importNode(headerNode, true));
+                            }
+
+                            const newPayload = newDoc.createElementNS(rootNamespace, "Payload");
+                            const newMRs = newDoc.createElementNS(mrNamespace, "MeterReadings");
+                            newMRs.setAttribute("xmlns", mrNamespace);
+
+                            batch.forEach(node => {
+                                newMRs.appendChild(newDoc.importNode(node, true));
+                            });
+
+                            newPayload.appendChild(newMRs);
+                            newRoot.appendChild(newPayload);
+
+                            const formattedXML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + formatXML(newRoot);
+                            
+                            const fileName = `${file.name.replace('.xml', '')}_${partIndex}.xml`;
+                            zip.file(fileName, formattedXML);
+                            partIndex++;
+                        }
+                    }
+
+                    status.innerText = '正在產生 ZIP 壓縮檔...';
+                    
+                    const content = await zip.generateAsync({type: "blob"});
+                    const url = URL.createObjectURL(content);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `split_xml_${new Date().getTime()}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    status.innerText = '處理完成!ZIP 檔已開始下載。';
+                    showCustomAlert('XML 分割完成!ZIP 檔已開始下載', 'success');
+
+                } catch (err) {
+                    status.innerText = '處理發生錯誤:' + err.message;
+                    showCustomAlert('處理發生錯誤: ' + err.message, 'error');
+                } finally {
+                    processBtn.disabled = false;
+                }
+            });
+        })();
     </script>
 </body>
 </html>
-
-
