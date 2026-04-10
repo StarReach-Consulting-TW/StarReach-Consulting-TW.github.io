@@ -456,12 +456,13 @@
                             <tr>
                                 <th>cust_id</th>
                                 <th>meter_id</th>
+								<th>地址</th>
                                 <th>Hescode</th>
                                 <th>需量(T/F)</th>
                             </tr>
                         </thead>
                         <tbody id="result-body-compare">
-                            <tr><td colspan="4" style="text-align:center;">結果將顯示於此</td></tr>
+                            <tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -601,7 +602,7 @@
             const filteredCountSpan = document.getElementById('filtered-count');
 
 			status.style.display = 'block';
-			resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">結果將顯示於此</td></tr>';
+			resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>';
 			copyBtn.style.display = 'none';
 			
 			if (downloadXlsxBtn) {
@@ -615,6 +616,7 @@
 			const FIELD_MAPPING = {
 				'meter_id': ['meter_id', '表號'],
 				'cust_id': ['cust_id', '電號'],
+				'address': ['address', '地址', '用電地址'],
 				'hescode': ['hescode'], 
                 'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
 			};
@@ -693,7 +695,7 @@
 
 				status.textContent = '正在準備處理...';
 				status.style.color = 'blue';
-				resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">正在處理中...</td></tr>';
+				resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">正在處理中...</td></tr>';
 				copyBtn.style.display = 'none';
 				if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none';
                 if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
@@ -721,7 +723,7 @@
 					console.error('處理檔案時發生錯誤:', error);
 					status.textContent = `錯誤: ${error.message} (請檢查檔案格式、欄位名稱或是否已下載 jszip.min.js 和 papaparse.min.js)`;
 					status.style.color = 'red';
-					resultBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">${error.message}</td></tr>`;
+					resultBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">${error.message}</td></tr>`;
 				}
 			}
 
@@ -754,6 +756,7 @@
 								}
 								if (!mappedFields.cust_id) { mappedFields.cust_id = null; }
 								if (!mappedFields.hescode) { mappedFields.hescode = null; }
+								if (!mappedFields.address) { mappedFields.address = null; }
                                 if (!mappedFields.demand) { mappedFields.demand = null; }
 
 
@@ -766,6 +769,7 @@
 										return {
 											cust_id: mappedFields.cust_id ? (row[mappedFields.cust_id] ? String(row[mappedFields.cust_id]).trim() : '') : '',
 											meter_id: meterId,
+											address: mappedFields.address ? (row[mappedFields.address] ? String(row[mappedFields.address]).trim() : '') : '',
 											hescode: mappedFields.hescode ? (row[mappedFields.hescode] ? String(row[mappedFields.hescode]).trim() : '') : '',
                                             demand: mappedFields.demand ? (row[mappedFields.demand] ? String(row[mappedFields.demand]).trim().toUpperCase() : '') : ''
 										};
@@ -860,7 +864,7 @@
 				if (missingEntries.length === 0) {
 					status.textContent = '比對完成:全部符合! CSV 中的所有 Meter ID 均可在 ZIP 檔案中找到。';
 					status.style.color = 'green';
-					resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
+					resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
 					copyBtn.style.display = 'none';
 					if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
                     if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
@@ -953,7 +957,7 @@
                 resultBody.innerHTML = ''; 
                 
                 if (entriesToDisplay.length === 0) {
-                    resultBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無符合篩選條件的資料</td></tr>';
+                    resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無符合篩選條件的資料</td></tr>';
                     copyBtn.style.display = 'none';
                     if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
                     return;
@@ -980,6 +984,10 @@
 					tdMeterId.textContent = entry.meter_id;
 					tr.appendChild(tdMeterId);
 
+					const tdAddress = document.createElement('td');
+					tdAddress.textContent = entry.address;
+					tr.appendChild(tdAddress);
+	
 					const tdHescode = document.createElement('td');
 					tdHescode.textContent = entry.hescode;
 					tr.appendChild(tdHescode);
@@ -998,10 +1006,10 @@
 					return;
 				}
 
-				const header = ['Cust ID', 'Meter ID', 'HES Code', '需量(T/F)'];
-				
-				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.hescode, item.demand])];
-				
+				const header = ['Cust ID', 'Meter ID', '地址', 'HES Code', '需量(T/F)'];
+
+				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.address, item.hescode, item.demand])];
+
 				const ws = XLSX.utils.aoa_to_sheet(exportData);
 				const wb = XLSX.utils.book_new();
 				XLSX.utils.book_append_sheet(wb, ws, "比對結果");
