@@ -426,7 +426,7 @@
                 <div class="warning">
                     <strong>功能:</strong> 比對 CSV 內 Meter ID 是否存在於 XML 檔案中。
                 </div>
-                <p style="text-align:center;">請<strong>同時</strong>將一個 CSV 檔 和一個 ZIP 檔案拖曳到下方區域</p>
+                <p style="text-align:center;">請 <strong style="color: red; font-size: 20px;">同時</strong> 將一個 CSV 檔 <strong style="color: red; font-size: 20px;">和</strong> 一個(或多個) ZIP 壓縮檔拖曳到下方區域</p>
 
                 <div id="drop-zone">將 .csv 檔和 .zip 檔拖曳到這裡</div>
                 
@@ -473,7 +473,7 @@
                 <div class="warning">
                     <strong>功能:</strong> 快速擷取資料夾或 ZIP 檔內所有 XML 的表號。
                 </div>
-                <p>請點擊下方按鈕選擇**一個或多個資料夾**,或**一個或多個 .zip 壓縮檔**進行分析。結果會累加顯示於預覽區,並可下載合併後的 CSV 檔案。</p>
+                <p>請點擊下方按鈕選擇 <strong style=" font-size: 20px;">一個(或多個)資料夾</strong> 或 <strong style=" font-size: 20px;">一個(或多個) ZIP 壓縮檔</strong> 進行分析。結果會累加顯示於預覽區,並可下載合併後的 CSV 檔案。</p>
 
 				<div id="drop-area-xml">
 				  <p>或將 .xml 檔案或 .zip 壓縮檔拖曳至此區域上傳</p>
@@ -598,97 +598,48 @@
 			const resultBody = document.getElementById('result-body-compare');
 			const copyBtn = document.getElementById('copy-btn-compare');
 			const downloadXlsxBtn = document.getElementById('download-xlsx-btn-compare'); 
-            const hescodeFilter = document.getElementById('hescode-filter'); 
-            const filteredCountSpan = document.getElementById('filtered-count');
-
-			status.style.display = 'block';
-			resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>';
-			copyBtn.style.display = 'none';
-			
-			if (downloadXlsxBtn) {
-				downloadXlsxBtn.style.display = 'none';
-			}
-            
-            if (hescodeFilter) {
-                hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
-            }
+			const hescodeFilter = document.getElementById('hescode-filter'); 
+			const filteredCountSpan = document.getElementById('filtered-count');
 
 			const FIELD_MAPPING = {
 				'meter_id': ['meter_id', '表號'],
 				'cust_id': ['cust_id', '電號'],
 				'address': ['address', '地址', '用電地址'],
 				'hescode': ['hescode'], 
-                'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
+				'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
 			};
 			
 			let allMissingEntries = []; 
-            let currentFilteredEntries = [];
+			let currentFilteredEntries = [];
+			let processedZipCount = 0; // 用於顯示進度
 
-            function copyFallback(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.top = '0';
-                textarea.style.left = '0';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                
-                let success = false;
-                try {
-                    textarea.focus();
-                    textarea.select();
-                    success = document.execCommand('copy');
-                } catch (err) {
-                    console.error('Fallback copy failed:', err);
-                }
-                
-                document.body.removeChild(textarea);
-                return success;
-            }
+			// 初始化介面
+			status.style.display = 'block';
+			resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>';
 
-			dropZone.addEventListener('dragover', (e) => {
-				e.preventDefault(); 
-				dropZone.classList.add('dragover');
-			});
-			dropZone.addEventListener('dragleave', (e) => {
-				e.preventDefault();
-				dropZone.classList.remove('dragover');
-			});
+			dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+			dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
 			dropZone.addEventListener('drop', (e) => {
 				e.preventDefault();
 				dropZone.classList.remove('dragover');
 				handleFiles(e.dataTransfer.files);
 			});
-            
-            if (hescodeFilter) {
-                hescodeFilter.addEventListener('change', (e) => {
-                    if (allMissingEntries.length > 0) {
-                        filterAndDisplayResults(allMissingEntries, e.target.value);
-                    }
-                });
-            }
 
 			async function handleFiles(files) {
-				if (files.length !== 2) {
-					status.textContent = '錯誤:請務必同時拖曳 2 個檔案 (一個 CSV/TSV 和一個 ZIP)';
-					status.style.color = 'red';
-					return;
-				}
-
 				let csvFile = null; 
-				let zipFile = null;
+				let zipFiles = [];
 
-				for (const file of files) {
+				for (const file of Array.from(files)) {
 					const lowerName = file.name.toLowerCase();
 					if (lowerName.endsWith('.csv') || lowerName.endsWith('.tsv') || lowerName.endsWith('.txt')) {
 						csvFile = file;
 					} else if (lowerName.endsWith('.zip')) {
-						zipFile = file;
+						zipFiles.push(file);
 					}
 				}
 
-				if (!csvFile || !zipFile) {
-					status.textContent = '錯誤:必須包含一個 .zip 檔案和一個 .csv (或 .tsv, .txt) 檔案';
+				if (!csvFile || zipFiles.length === 0) {
+					status.textContent = '錯誤: 請務必提供「一個 CSV」以及「至少一個 ZIP」檔案。';
 					status.style.color = 'red';
 					return;
 				}
@@ -696,196 +647,145 @@
 				status.textContent = '正在準備處理...';
 				status.style.color = 'blue';
 				resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">正在處理中...</td></tr>';
-				copyBtn.style.display = 'none';
-				if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none';
-                if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
-                if (filteredCountSpan) filteredCountSpan.textContent = '';
-
+				processedZipCount = 0;
 
 				try {
-					status.textContent = '步驟 1/4: 正在讀取 CSV/TSV 檔案...';
+					// 1. 解析 CSV
+					status.textContent = '步驟 1/3: 正在讀取 CSV 檔案...';
 					const csvData = await parseCSV(csvFile, FIELD_MAPPING); 
 
-					status.textContent = '步驟 2/4: 正在讀取 ZIP 檔案... (此步驟可能耗時較久)';
-					const zipNamesSet = await parseZIP(zipFile);
+					// 2. 遞迴解析所有 ZIP
+					status.textContent = '步驟 2/3: 正在遞迴掃描 ZIP 內容 (包含子 ZIP)...';
+					const allZipMeterIds = new Set();
 					
-					status.textContent = '步驟 3/4: 正在比較資料... (資料量大時可能耗時)';
-					let missingEntries = compareData(csvData, zipNamesSet);
+					for (const zFile of zipFiles) {
+						const zipNamesSet = await parseZIPRecursive(zFile);
+						zipNamesSet.forEach(id => allZipMeterIds.add(id));
+					}
 					
-					status.textContent = '步驟 3.5/4: 正在依 Hescode 及需量(T/F) 排序...';
+					// 3. 比較與排序
+					status.textContent = '步驟 3/3: 正在比較資料並排序...';
+					let missingEntries = compareData(csvData, allZipMeterIds);
 					missingEntries = sortMissingEntries(missingEntries);
 
-
-					status.textContent = '步驟 4/4: 正在產生結果頁面...';
 					displayResults(missingEntries); 
 
 				} catch (error) {
-					console.error('處理檔案時發生錯誤:', error);
-					status.textContent = `錯誤: ${error.message} (請檢查檔案格式、欄位名稱或是否已下載 jszip.min.js 和 papaparse.min.js)`;
+					console.error(error);
+					status.textContent = `錯誤: ${error.message}`;
 					status.style.color = 'red';
-					resultBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">${error.message}</td></tr>`;
 				}
 			}
+
+			/**
+			 * 核心邏輯：遞迴解析 ZIP 檔案
+			 * @param {File|Blob|Uint8Array} fileData 檔案內容
+			 * @returns {Set} 該 ZIP 內含的所有 Meter ID
+			 */
+			async function parseZIPRecursive(fileData) {
+				const namesSet = new Set();
+				const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
+				
+				try {
+					const zip = await JSZip.loadAsync(fileData);
+					const entries = Object.keys(zip.files);
+
+					for (const fileName of entries) {
+						const zipEntry = zip.files[fileName];
+						if (zipEntry.dir) continue;
+
+						const lowerName = fileName.toLowerCase();
+
+						// 如果內部還有 ZIP，則進入遞迴
+						if (lowerName.endsWith('.zip')) {
+							const subZipContent = await zipEntry.async('uint8array');
+							const subSet = await parseZIPRecursive(subZipContent);
+							subSet.forEach(id => namesSet.add(id));
+						} 
+						// 如果是 XML，提取名稱
+						else if (lowerName.endsWith('.xml')) {
+							const content = await zipEntry.async('string');
+							let match;
+							while ((match = regex.exec(content)) !== null) {
+								namesSet.add(match[1].trim().toUpperCase());
+							}
+						}
+					}
+				} catch (err) {
+					console.error("ZIP 處理出錯:", err);
+				}
+				return namesSet;
+			}
+
+			// --- 以下為原有邏輯的整合 (parseCSV, compareData, displayResults 等不變或微調) ---
 
 			function parseCSV(file, mapping) {
 				return new Promise((resolve, reject) => {
 					Papa.parse(file, {
-						delimiter: "\t", 
+						delimiter: "", // 自動偵測
 						skipEmptyLines: true,
-						encoding: "UTF-8", 
-						header: true, 
-						transformHeader: (header) => String(header).trim().toLowerCase(), 
+						encoding: "UTF-8",
+						header: true,
+						transformHeader: (header) => String(header).trim().toLowerCase(),
 						complete: (results) => {
-							try {
-								const headerNames = results.meta.fields || [];
-								const mappedFields = {};
-
-								for (const targetField in mapping) {
-									const aliases = mapping[targetField];
-									const foundHeader = aliases.find(alias => {
-										return headerNames.includes(String(alias).trim().toLowerCase());
-									});
-									
-									if (foundHeader) {
-										mappedFields[targetField] = String(foundHeader).trim();
-									}
-								}
-
-								if (!mappedFields.meter_id) {
-									return reject(new Error('CSV 檔案中未找到「Meter ID」或「表號」欄位。'));
-								}
-								if (!mappedFields.cust_id) { mappedFields.cust_id = null; }
-								if (!mappedFields.hescode) { mappedFields.hescode = null; }
-								if (!mappedFields.address) { mappedFields.address = null; }
-                                if (!mappedFields.demand) { mappedFields.demand = null; }
-
-
-								const mappedData = results.data
-									.filter(row => row[mappedFields.meter_id]) 
-									.map(row => {
-										const meterId = row[mappedFields.meter_id] ? String(row[mappedFields.meter_id]).trim().toUpperCase() : ''; 
-										if (!meterId) return null;
-
-										return {
-											cust_id: mappedFields.cust_id ? (row[mappedFields.cust_id] ? String(row[mappedFields.cust_id]).trim() : '') : '',
-											meter_id: meterId,
-											address: mappedFields.address ? (row[mappedFields.address] ? String(row[mappedFields.address]).trim() : '') : '',
-											hescode: mappedFields.hescode ? (row[mappedFields.hescode] ? String(row[mappedFields.hescode]).trim() : '') : '',
-                                            demand: mappedFields.demand ? (row[mappedFields.demand] ? String(row[mappedFields.demand]).trim().toUpperCase() : '') : ''
-										};
-									})
-									.filter(item => item !== null);
-
-								console.log(`CSV 讀取完畢,共 ${mappedData.length} 筆有效資料。已自動配對的欄位:`, mappedFields);
-								resolve(mappedData);
-
-							} catch (e) {
-								reject(new Error(`CSV 檔案處理錯誤: ${e.message}`));
+							const headerNames = results.meta.fields || [];
+							const mappedFields = {};
+							for (const targetField in mapping) {
+								const foundHeader = mapping[targetField].find(alias => headerNames.includes(alias.toLowerCase()));
+								if (foundHeader) mappedFields[targetField] = foundHeader.toLowerCase();
 							}
+
+							if (!mappedFields.meter_id) return reject(new Error('CSV 內找不到表號欄位'));
+
+							const mappedData = results.data
+								.map(row => ({
+									cust_id: row[mappedFields.cust_id] || '',
+									meter_id: String(row[mappedFields.meter_id] || '').trim().toUpperCase(),
+									address: row[mappedFields.address] || '',
+									hescode: row[mappedFields.hescode] || '',
+									demand: String(row[mappedFields.demand] || '').trim().toUpperCase()
+								}))
+								.filter(item => item.meter_id);
+							resolve(mappedData);
 						},
-						error: (err) => {
-							reject(new Error(`CSV 解析失敗: ${err.message}`));
-						}
+						error: (err) => reject(err)
 					});
 				});
 			}
 
-			async function parseZIP(file) {
-				const zip = await JSZip.loadAsync(file);
-				const namesSet = new Set();
-				const regex = /<name>([A-Za-z0-9]{10})<\/name>/g; 
-				const xmlFiles = [];
-				
-				zip.forEach((relativePath, zipEntry) => {
-					if (zipEntry.name.toLowerCase().endsWith('.xml') && !zipEntry.dir) {
-						xmlFiles.push(zipEntry);
-					}
-				});
-
-				if (xmlFiles.length === 0) {
-					console.warn("ZIP 檔案中未找到任何 .xml 檔案");
-				}
-
-				let processedCount = 0;
-				for (const xmlFile of xmlFiles) {
-					processedCount++;
-					status.textContent = `步驟 2/4: 正在處理 ZIP... (${processedCount} / ${xmlFiles.length} 個 XML 檔案)`;
-					
-					try {
-						const content = await xmlFile.async('string');
-						let match;
-						while ((match = regex.exec(content)) !== null) {
-							namesSet.add(match[1].trim().toUpperCase()); 
-						}
-					} catch (err) {
-						console.error(`處理 ${xmlFile.name} 時出錯:`, err);
-						console.warn(`跳過 ${xmlFile.name} 檔案`);
-					}
-				}
-				
-				console.log(`ZIP 讀取完畢,共找到 ${namesSet.size} 個唯一的 <name> ID`);
-				return namesSet;
-			}
-
 			function compareData(csvData, zipNamesSet) {
-				const missing = csvData.filter(csvRow => {
-					return csvRow && csvRow.meter_id && !zipNamesSet.has(csvRow.meter_id);
-				});
-				return missing;
+				return csvData.filter(csvRow => !zipNamesSet.has(csvRow.meter_id));
 			}
-			
+
 			function sortMissingEntries(entries) {
 				return entries.sort((a, b) => {
-					const hescodeA = a.hescode || '';
-					const hescodeB = b.hescode || '';
-					if (hescodeA < hescodeB) return -1;
-					if (hescodeA > hescodeB) return 1;
-
-					const demandA = a.demand || '';
-					const demandB = b.demand || '';
-					
-					if (demandA.toUpperCase() === 'T' && demandB.toUpperCase() === 'F') return -1;
-					if (demandA.toUpperCase() === 'F' && demandB.toUpperCase() === 'T') return 1;
-					if (demandA.toUpperCase() < demandB.toUpperCase()) return -1;
-					if (demandA.toUpperCase() > demandB.toUpperCase()) return 1;
-
-					const meterA = a.meter_id || '';
-					const meterB = b.meter_id || '';
-					if (meterA < meterB) return -1;
-					if (meterA > meterB) return 1;
-					
-					return 0;
+					// 先比 Hescode
+					if (a.hescode !== b.hescode) return (a.hescode || '').localeCompare(b.hescode || '');
+					// 再比 Demand (T 先於 F)
+					if (a.demand !== b.demand) return a.demand === 'T' ? -1 : 1;
+					// 最後比表號
+					return a.meter_id.localeCompare(b.meter_id);
 				});
 			}
 
-
 			function displayResults(missingEntries) {
-                
+				allMissingEntries = missingEntries;
 				if (missingEntries.length === 0) {
-					status.textContent = '比對完成:全部符合! CSV 中的所有 Meter ID 均可在 ZIP 檔案中找到。';
+					status.textContent = '比對完成：全部符合！';
 					status.style.color = 'green';
-					resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無差異資料 (全部符合)</td></tr>';
-					copyBtn.style.display = 'none';
-					if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
-                    if (hescodeFilter) hescodeFilter.innerHTML = '<option value="all">所有 Hescode</option>';
-					if (filteredCountSpan) filteredCountSpan.textContent = '';
-					showCustomAlert('比對完成:全部符合!', 'success');
+					resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無差異資料</td></tr>';
 					return;
 				}
-                
-                allMissingEntries = missingEntries; 
-                
-				status.textContent = `比對完成:在 CSV 中找到 ${allMissingEntries.length} 筆資料不存在於 ZIP 檔案中。`;
+
+				status.textContent = `比對完成：CSV 中有 ${missingEntries.length} 筆不存在於 ZIP 中。`;
 				status.style.color = 'darkorange';
-
-                populateHescodeFilter(allMissingEntries);
-                filterAndDisplayResults(allMissingEntries, hescodeFilter.value);
-
+				
+				populateHescodeFilter(missingEntries);
+				filterAndDisplayResults(missingEntries, 'all');
+				
 				if (downloadXlsxBtn) {
 					downloadXlsxBtn.style.display = 'inline-block';
-					downloadXlsxBtn.onclick = () => {
-						downloadXLSX(allMissingEntries);
-					};
+					downloadXlsxBtn.onclick = () => downloadXLSX(allMissingEntries);
 				}
 			}
             
