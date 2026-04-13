@@ -3,1538 +3,1098 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>開票小工具 (v5 - 整合版)</title>
+    <title>開票小工具 (v7)</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .container {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #1a0dab;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .tab-container {
-            display: flex;
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-        .tab-link {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-bottom: none;
-            background-color: #c9c9c9;
-            font-size: 16px;
-            white-space: nowrap;
-            border-radius: 8px 8px 0 0;
-            margin-right: 5px;
-            position: relative;
-            top: 0;
-        }
-        .tab-link.active {
-            background-color: #4b4b4b;
-            color: white;
-            border-color: #4b4b4b #4b4b4b #fff #4b4b4b;
-            z-index: 1;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        .container { background-color: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #1a0dab; text-align: center; margin-bottom: 30px; }
+        .tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; overflow-x: auto; }
+        .tab-link { padding: 10px 20px; cursor: pointer; border: 2px solid transparent; border-bottom: none; background-color: #c9c9c9; font-size: 15px; white-space: nowrap; border-radius: 8px 8px 0 0; margin-right: 5px; position: relative; top: 0; }
+        .tab-link.active { background-color: #4b4b4b; color: white; border-color: #4b4b4b #4b4b4b #fff #4b4b4b; z-index: 1; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        button {
-            padding: 8px 12px;
-            font-size: 14px;
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+        button { padding: 8px 12px; font-size: 14px; background-color: #4285f4; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
         button:hover { background-color: #357ae8; }
         button:disabled { background-color: #bdc1c6; cursor: not-allowed; }
-        .input-container {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .main-action-btn-label {
-            flex: 1;
-            display: block;
-            padding: 12px;
-            font-size: 18px;
-            background-color: #4285f4;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-align: center;
-        }
+        .main-action-btn-label { flex: 1; display: block; padding: 12px; font-size: 18px; background-color: #4285f4; color: white; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; text-align: center; }
         .main-action-btn-label:hover { background-color: #357ae8; }
-        #clear-btn-xml {
-            background-color: #dc3545;
-            margin: 0 auto 15px auto;
-            display: none;
-        }
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-top: 30px;
-        }
+        #clear-btn-xml { background-color: #dc3545; margin: 0 auto 15px auto; display: none; }
+        .results-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-top: 30px; }
         h2 { margin: 0; padding: 0; border: none; }
-        pre {
-            background-color: #eef;
-            padding: 15px;
-            border-radius: 5px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: "Courier New", Courier, monospace;
-            border: 1px solid #ddd;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .warning, .status, .download-area {
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            text-align: center;
-        }
-        .warning {
-            background-color: #fffbe6;
-            border: 1px solid #ffe58f;
-            color: #ad8600;
-        }
-        .status {
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            font-style: italic;
-            word-break: break-all;
-        }
-        .download-area {
-            background-color: #e6f4ea;
-            border: 1px solid #b7e1c1;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .download-area a {
-            color: #155724;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 18px;
-        }
+        pre { background-color: #eef; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; font-family: "Courier New", Courier, monospace; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
+        .warning { padding: 10px 15px; border-radius: 5px; margin: 15px 0; text-align: center; background-color: #fffbe6; border: 1px solid #ffe58f; color: #ad8600; }
+        .status { padding: 10px 15px; border-radius: 5px; margin: 15px 0; text-align: center; background-color: #f0f0f0; border: 1px solid #ccc; font-style: italic; word-break: break-all; }
+        .download-area { padding: 10px 15px; border-radius: 5px; margin: 15px 0; text-align: center; background-color: #e6f4ea; border: 1px solid #b7e1c1; display: none; flex-direction: column; gap: 10px; }
+        .download-area a { color: #155724; font-weight: bold; text-decoration: none; font-size: 18px; }
         .download-area a:hover { text-decoration: underline; }
-        input[type="file"] {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 20px 0;
-            border: 2px dashed #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .action-label {
-            display: block; 
-            width: 100%; 
-            padding: 12px; 
-            font-size: 18px; 
-            background-color: #4285f4; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            transition: background-color 0.3s; 
-            text-align: center; 
-            box-sizing: border-box; 
-            margin: 20px 0;
-        }
+        input[type="file"] { display: block; width: 100%; padding: 10px; margin: 20px 0; border: 2px dashed #ccc; border-radius: 5px; box-sizing: border-box; }
+        input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .action-label { display: block; width: 100%; padding: 12px; font-size: 18px; background-color: #4285f4; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; text-align: center; box-sizing: border-box; margin: 20px 0; }
         .action-label:hover { background-color: #357ae8; }
         .options-group { margin-bottom: 15px; }
         .options-group label { margin-right: 15px; }
         .options-group p { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
+        .download-links-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .download-link-box { display: flex; align-items: center; justify-content: center; gap: 10px; background-color: #4285f4; color: white; padding: 15px 20px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .download-link-box:hover { background-color: #357ae8; transform: translateY(-2px); }
+        .download-link-box::before { content: '↓'; font-size: 20px; }
+        #drop-zone { border: 3px dashed #ccc; border-radius: 15px; width: 90%; max-width: 800px; height: 200px; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 1.2em; color: #aaa; transition: background-color 0.3s, border-color 0.3s; }
+        #drop-zone.dragover { background-color: #e0f0ff; border-color: #007bff; }
+        #results-container-compare { margin: 20px auto; width: 100%; }
+        #copy-btn-compare { display: none; background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        #copy-btn-compare:hover { background-color: #0056b3; }
+        #download-xlsx-btn-compare { display: none; background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        #download-xlsx-btn-compare:hover { background-color: #1e7e34; }
+        #top-controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        #filter-controls-compare { display: flex; align-items: center; gap: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex-grow: 1; min-width: 300px; max-width: 50%; margin-right: 10px; }
+        #filter-controls-compare label[for="hescode-filter"] { white-space: nowrap; }
+        #hescode-filter { padding: 5px; border-radius: 3px; font-size: 14px; flex-grow: 1; min-width: 100px; }
+        #filtered-count { font-weight: bold; color: #007bff; white-space: nowrap; }
+        #action-buttons-compare { display: flex; gap: 10px; flex-shrink: 0; margin-top: 5px; }
+        #result-table-compare { width: 100%; border-collapse: collapse; box-shadow: 0 0 5px rgba(0,0,0,0.1); clear: both; }
+        #result-table-compare th, #result-table-compare td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        #result-table-compare th { background-color: #f2f2f2; position: sticky; top: 0; }
+        #result-body-compare tr:nth-child(even) { background-color: #f9f9f9; }
+        #result-body-compare tr:hover { background-color: #f1f1f1; }
+        #drop-area-xml { border: 2px dashed #ccc; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; color: #333; transition: border-color 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; }
+        #drop-area-xml.highlight { border-color: #007bff; background-color: #e6f7ff; }
+        .button { display: inline-block; background-color: #007bff; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        #custom-alert { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; text-align: center; border-radius: 6px; padding: 16px; font-weight: bold; position: fixed; z-index: 9999; right: 20px; top: 50px; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0; transition: visibility 0s, opacity 0.5s linear; }
+        #custom-alert.show { visibility: visible; opacity: 1; }
+        #custom-alert.success { background-color: #beedc0; border: 2px solid #fff; color: #08730c; }
+        #custom-alert.error { background-color: #f5beba; border: 2px solid #fff; color: #910b01; }
+        .input-group { background: #f1f3f4; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
 
-        .download-links-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap; 
-            margin-top: 20px;
-        }
-
-        .download-link-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background-color: #4285f4;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .download-link-box:hover {
-            background-color: #357ae8;
-            transform: translateY(-2px);
-        }
-
-        .download-link-box::before {
-            content: '↓';
-            font-size: 20px;
-        }
-
-        #drop-zone {
-            border: 3px dashed #ccc;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 800px;
-            height: 200px;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            color: #aaa;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        #drop-zone.dragover {
-            background-color: #e0f0ff;
-            border-color: #007bff;
-        }
-        #results-container-compare {
-            margin: 20px auto;
-            width: 100%;
-        }
-        #copy-btn-compare {
-            display: none; 
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        #copy-btn-compare:hover {
-            background-color: #0056b3;
-        }
-		#download-xlsx-btn-compare {
-			display: none; 
-			background-color: #28a745; 
-			color: white;
-			padding: 10px 15px;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			font-size: 1em;
-		}
-		#download-xlsx-btn-compare:hover {
-			background-color: #1e7e34;
-		}
-        #top-controls-row {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap;
-        }
-
-        #filter-controls-compare { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            border: 1px solid #ddd; 
-            padding: 10px; 
-            border-radius: 5px; 
-            flex-grow: 1; 
-            min-width: 300px; 
-            max-width: 50%;
-            margin-right: 10px;
-        }
-        
-        #filter-controls-compare label[for="hescode-filter"] {
-            white-space: nowrap;
-        }
-        
-        #hescode-filter { 
-            padding: 5px; 
-            border-radius: 3px; 
-            font-size: 14px; 
-            flex-grow: 1; 
-            min-width: 100px;
-        }
-        
-        #filtered-count {
-            font-weight: bold; 
-            color: #007bff; 
-            white-space: nowrap;
-        }
-
-        #action-buttons-compare {
-            display: flex; 
-            gap: 10px; 
-            flex-shrink: 0; 
-            margin-top: 5px;
-        }
-		
-        #result-table-compare {
-            width: 100%;
-            border-collapse: collapse;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-            clear: both; 
-        }
-        #result-table-compare th, #result-table-compare td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        #result-table-compare th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-        #result-body-compare tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        #result-body-compare tr:hover {
-            background-color: #f1f1f1;
-        }
-		
-		#drop-area-xml {
-		  border: 2px dashed #ccc;
-		  border-radius: 8px;
-		  padding: 20px;
-		  margin: 20px 0;
-		  text-align: center;
-		  font-family: sans-serif;
-		  color: #333;
-		  transition: border-color 0.2s, background-color 0.2s;
-		  display: flex;
-		  flex-direction: column;
-		  align-items: center;
-		}
-
-		#drop-area-xml.highlight {
-		  border-color: #007bff;
-		  background-color: #e6f7ff;
-		}
-
-		.button {
-			display: inline-block;
-			background-color: #007bff;
-			color: white;
-			padding: 10px 15px;
-			border-radius: 5px;
-			cursor: pointer;
-			margin: 5px;
-		}
-        #custom-alert {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #333;
-            text-align: center;
-            border-radius: 6px;
-            padding: 16px;
-			font-weight: bold;
-            position: fixed;
-            z-index: 9999;
-            right: 20px;
-            top: 50px;
-            font-size: 18px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transition: visibility 0s, opacity 0.5s linear;
-        }
-
-        #custom-alert.show {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        #custom-alert.success {
-            background-color: #beedc0;
-			border: 2px solid #fff;
-			color: #08730c;
-        }
-
-        #custom-alert.error {
-            background-color: #f5beba;
-			border: 2px solid #fff;
-			color: #910b01;
-        }
-
-        .input-group {
-            background: #f1f3f4;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-		
+        /* ===== 工具二 (整合版) 專用樣式 ===== */
+        #tool-xml-parse .config-section { background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-bottom: 20px; }
+        #tool-xml-parse .mode-switch { margin-top: 15px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; }
+        #tool-xml-parse .mode-switch label { margin-bottom: 10px; display: block; cursor: pointer; font-weight: normal; }
+        #tool-xml-parse .mode-switch label:last-child { margin-bottom: 0; }
+        #tool-xml-parse textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: monospace; resize: vertical; }
+        #exportBtn-6 { background-color: #34a853; }
+        #exportBtn-6:hover { background-color: #2a8744; }
+        #tool-xml-parse .stats-6 { padding: 10px; background: #e8f0fe; border-left: 5px solid #1a73e8; font-weight: bold; border-radius: 0 5px 5px 0; margin: 10px 0; }
+        .table-wrapper-6 { max-height: 550px; overflow-y: auto; margin-top: 15px; border: 1px solid #eee; border-radius: 5px; }
+        #resultTable-6 { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        #resultTable-6 th, #resultTable-6 td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; word-break: break-all; }
+        #resultTable-6 th { background-color: #f2f2f2; position: sticky; top: 0; z-index: 10; cursor: pointer; user-select: none; }
+        #resultTable-6 th:hover { background-color: #e2e4e5; }
+        #resultTable-6 th.sort-asc::after { content: " ▲"; color: #1a73e8; }
+        #resultTable-6 th.sort-desc::after { content: " ▼"; color: #1a73e8; }
+        #resultTable-6 tr:nth-child(even) { background-color: #fafafa; }
+        #resultTable-6 tr:hover { background-color: #f1f1f1; }
+        .highlight-meter { color: #d93025; font-weight: bold; }
+        .highlight-val { color: #1a73e8; font-weight: bold; }
+        /* 模式切換顯示區 */
+        #filterInputArea-6, #refQueryArea-6, #validationArea-6, #extractPreviewArea-6 { display: none; margin-top: 10px; }
+        #validationArea-6 { background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 12px; }
+        #validationArea-6 p { margin: 0 0 6px 0; font-weight: bold; color: #795548; }
+        /* badges */
+        .badge-ok  { display: inline-block; background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
+        .badge-err { display: inline-block; background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
+        .badge-warn{ display: inline-block; background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
+        .err-row { background-color: #fff3e0 !important; }
+        #validationSummary-6 { margin-top: 12px; padding: 10px; background: #f3e5f5; border-left: 5px solid #8e24aa; border-radius: 0 5px 5px 0; font-weight: bold; display: none; }
+        /* ReadingType 下拉多選 */
+        .rt-selector-wrap { border: 1px solid #ccc; border-radius: 6px; background: #fff; max-height: 200px; overflow-y: auto; padding: 6px 4px; margin-top: 6px; }
+        .rt-selector-wrap label { display: flex; align-items: flex-start; gap: 6px; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-weight: normal; font-size: 13px; }
+        .rt-selector-wrap label:hover { background: #e8f0fe; }
+        .rt-selector-wrap label input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
+        .rt-code { font-family: monospace; color: #555; font-size: 11px; display: block; margin-top: 1px; }
+        .rt-controls { display: flex; gap: 8px; margin-top: 6px; }
+        .rt-controls button { font-size: 12px; padding: 4px 8px; background: #6c757d; }
+        .rt-controls button:hover { background: #5a6268; }
+        /* drop-area-xml6 for tool 2 new */
+        #drop-area-xml6 { border: 2px dashed #ccc; border-radius: 8px; padding: 20px; margin: 0 0 10px 0; text-align: center; color: #333; transition: border-color 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        #drop-area-xml6.highlight { border-color: #007bff; background-color: #e6f7ff; }
+        #drop-area-xml6 p { margin: 0; color: #777; font-size: 14px; }
+        .file-input-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
     </style>
-
     <script src="jszip.min.js"></script>
     <script src="papaparse.min.js"></script>
     <script src="xlsx.full.min.js"></script>
-
 </head>
 <body>
-    <div class="container">
-        <h1>開票小工具</h1>
-
-        <div class="tab-container">
-            <button class="tab-link active" data-tab="tool-compare">CSV/XML 表號比對</button> 
-            <button class="tab-link" data-tab="tool-xml">XML 表號解析</button>
-            <button class="tab-link" data-tab="tool-zip">ZIP 中繼檔解析</button>
-            <button class="tab-link" data-tab="tool-merge-split">例外清單處理</button>
-            <button class="tab-link" data-tab="tool-xml-split">XML 分割工具</button>
-        </div>
-
-        <div class="content-container">
-
-            <div id="tool-compare" class="tab-content active">
-                <div class="warning">
-                    <strong>功能:</strong> 比對 CSV 內 Meter ID 是否存在於 XML 檔案中。
-                </div>
-                <p style="text-align:center;">請 <strong style="color: red; font-size: 20px;">同時</strong> 將一個 CSV 檔 <strong style="color: red; font-size: 20px;">和</strong> 一個(或多個) ZIP 壓縮檔拖曳到下方區域</p>
-
-                <div id="drop-zone">將 .csv 檔和 .zip 檔拖曳到這裡</div>
-                
-                <div id="status-compare" class="status">正在等待檔案拖曳...</div> 
-
-                <h3>比較結果 (CSV 中存在,但 ZIP 中找不到 Meter ID)</h3>
-				
-                <div id="top-controls-row"> 
-                    
-                    <div id="filter-controls-compare">
-                        <label for="hescode-filter">依 Hescode 篩選:</label>
-                        <select id="hescode-filter">
-                            <option value="all">所有 Hescode</option>
-                        </select>
-                        <span id="filtered-count"></span>
-                    </div>
-
-                    <div id="action-buttons-compare">
-                        <button id="copy-btn-compare">一鍵複製</button>
-                        <button id="download-xlsx-btn-compare">下載 XLSX (ALL)</button>
-                    </div>
-
-                </div>
-                <div id="results-container-compare">
-                    <table id="result-table-compare">
-                        <thead>
-                            <tr>
-                                <th>cust_id</th>
-                                <th>meter_id</th>
-								<th>地址</th>
-                                <th>Hescode</th>
-                                <th>需量(T/F)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-body-compare">
-                            <tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-            <div id="tool-xml" class="tab-content">
-                <div class="warning">
-                    <strong>功能:</strong> 快速擷取資料夾或 ZIP 檔內所有 XML 的表號。
-                </div>
-                <p>請點擊下方按鈕選擇 <strong style=" font-size: 20px;">一個(或多個)資料夾</strong> 或 <strong style=" font-size: 20px;">一個(或多個) ZIP 壓縮檔</strong> 進行分析。結果會累加顯示於預覽區,並可下載合併後的 CSV 檔案。</p>
-
-				<div id="drop-area-xml">
-				  <p>或將 .xml 檔案或 .zip 壓縮檔拖曳至此區域上傳</p>
-				  
-				  <label for="folder-input-xml" class="button">選擇資料夾</label>
-				  <input type="file" id="folder-input-xml" webkitdirectory directory multiple style="display: none;">
-				  
-				  <label for="zip-input-xml" class="button">選擇壓縮檔 (.zip)</label>
-				  <input type="file" id="zip-input-xml" multiple accept=".zip" style="display: none;">
-				</div>
-                <button id="clear-btn-xml">清除結果並重新開始</button>
-                <div class="results-header">
-                    <h2>表號預覽:</h2>
-                    <button id="copy-btn-xml" style="display: none;">複製結果</button>
-                </div>
-				<div id="status-xml">等待處理...</div>
-				<pre id="results-display-xml">...</pre>
-				<div id="download-area-xml"></div>      
-			</div>
-			
-            <div id="tool-zip" class="tab-content">
-                <div class="warning">
-                    <strong>功能:</strong> 快速整理中繼檔( MDMSL_YYYMMNN.zip )資料夾內所有電號表號及表別。
-                </div>			
-                <p>請上傳一個 .zip 壓縮檔。此工具將會對 .txt 檔案內容進行分組與彙總,最終生成一個包含「電號」、「表號」與「表別」的 Excel (.xlsx) 檔案下載連結。</p>
-        
-                <input type="file" id="zipFile-zip" accept=".zip">
-                
-                <div id="status-zip" class="status"></div>
-                <div id="download-area-zip" class="download-area"></div>
-            </div>
-
-            <div id="tool-merge-split" class="tab-content">
-                <div class="warning">
-                    <strong>功能:</strong> 一次性將多個例外清單合併並整理為 CSV,同時將合併結果根據區處拆分。
-                </div>
-                <p>請選擇多個來源 <code>.xlsx</code> 檔案,工具會自動完成合併、拆分並產生兩個下載連結。</p>
-        
-                <label for="files-merge-split" class="action-label">選擇多個 Excel (.xlsx) 檔案</label>
-                <input type="file" id="files-merge-split" multiple accept=".xlsx" style="display:none;">
-                <span id="file-count-merge-split" style="margin-left: 10px; font-size: 20px; color: #ed4242;"></span>
-
-                <div class="options-group">
-                    <p>報表日期選項:</p>
-                    <input type="radio" id="date-today-merge-split" name="date-option-merge-split" value="today" checked>
-                    <label for="date-today-merge-split">使用今天日期</label>
-                    <input type="radio" id="date-specify-merge-split" name="date-option-merge-split" value="specify">
-                    <label for="date-specify-merge-split">指定日期:</label>
-                    <input type="date" id="specified-date-merge-split" disabled>
-                </div>
-
-                <button id="start-merge-split-btn">開始處理並下載檔案</button>
-                <div id="status-merge-split" class="status"></div>
-                
-                <div id="download-area-merge-split" class="download-links-container" style="display: none;"></div>
-            </div>
-
-            <div id="tool-xml-split" class="tab-content">
-                <div class="warning">
-                    <strong>功能:</strong> 將大型 XML 檔案 ( >8 MB ) 分割成多個小檔案。
-                </div>
-
-                <div class="input-group">
-                    <label>1. 選擇 XML 檔案 (可多選):</label>
-                    <input type="file" id="fileInput-split" accept=".xml" multiple>
-                </div>
-
-                <div class="input-group">
-                    <label>2. 每個檔案包含的 meter_id 數量:</label>
-                    <input type="number" id="batchSize-split" value="250" min="1">
-                </div>
-
-                <button id="processBtn-split">開始處理並下載 ZIP</button>
-
-                <div id="status-split" class="status" style="display: none;"></div>
-            </div>
-        </div>
+<div class="container">
+    <h1>開票小工具</h1>
+    <div class="tab-container">
+        <button class="tab-link active" data-tab="tool-compare">CSV/XML 表號比對</button>
+        <button class="tab-link" data-tab="tool-xml-parse">XML 綜合解析</button>
+        <button class="tab-link" data-tab="tool-zip">ZIP 中繼檔解析</button>
+        <button class="tab-link" data-tab="tool-merge-split">例外清單處理</button>
+        <button class="tab-link" data-tab="tool-xml-split">XML 分割工具</button>
     </div>
-	
-	<div id="custom-alert"></div>
 
-    <script>
-        let alertTimeout;
+    <div class="content-container">
 
-        function showCustomAlert(message, type = 'info') {
-            const alertBox = document.getElementById('custom-alert');
-            clearTimeout(alertTimeout);
-            alertBox.textContent = message;
-            alertBox.className = '';
-            alertBox.classList.add(type);
-            alertBox.classList.add('show');
-            alertTimeout = setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 3000);
-        }
+        <!-- 工具一 -->
+        <div id="tool-compare" class="tab-content active">
+            <div class="warning"><strong>功能:</strong> 比對 CSV 內 Meter ID 是否存在於 XML 檔案中。</div>
+            <p style="text-align:center;">請 <strong style="color:red;font-size:20px;">同時</strong> 將一個 CSV 檔 <strong style="color:red;font-size:20px;">和</strong> 一個(或多個) ZIP 壓縮檔拖曳到下方區域</p>
+            <div id="drop-zone">將 .csv 檔和 .zip 檔拖曳到這裡</div>
+            <div id="status-compare" class="status">正在等待檔案拖曳...</div>
+            <h3>比較結果 (CSV 中存在,但 ZIP 中找不到 Meter ID)</h3>
+            <div id="top-controls-row">
+                <div id="filter-controls-compare">
+                    <label for="hescode-filter">依 Hescode 篩選:</label>
+                    <select id="hescode-filter"><option value="all">所有 Hescode</option></select>
+                    <span id="filtered-count"></span>
+                </div>
+                <div id="action-buttons-compare">
+                    <button id="copy-btn-compare">一鍵複製</button>
+                    <button id="download-xlsx-btn-compare">下載 XLSX (ALL)</button>
+                </div>
+            </div>
+            <div id="results-container-compare">
+                <table id="result-table-compare">
+                    <thead><tr><th>cust_id</th><th>meter_id</th><th>地址</th><th>Hescode</th><th>需量(T/F)</th></tr></thead>
+                    <tbody id="result-body-compare"><tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr></tbody>
+                </table>
+            </div>
+        </div>
 
-        function setupTabs(tabLinksSelector, tabContentSelector) {
-            const tabs = document.querySelectorAll(tabLinksSelector);
-            const contents = document.querySelectorAll(tabContentSelector);
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const targetId = tab.getAttribute('data-tab');
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.getElementById(targetId).classList.add('active');
-                });
-            });
-        }
+        <!-- 工具二：XML 綜合解析（整合原工具二表號解析 + 原工具六） -->
+        <div id="tool-xml-parse" class="tab-content">
+            <div class="warning"><strong>功能:</strong> 解析 XML 檔案，支援五種模式：表號提取、特定表號查詢、復歸資料查詢、ReadingType 值查詢、XML 合規性檢查。</div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setupTabs('.tab-container .tab-link', '.content-container .tab-content');
+            <div class="config-section">
+                <!-- 匯入框（整合原工具二的所有匯入方式） -->
+                <label style="font-weight:bold;">1. 選擇 XML 檔案：</label>
+                <div id="drop-area-xml6">
+                    <p>將 .xml 檔案 / .zip 壓縮檔拖曳至此，或使用下方按鈕選擇</p>
+                    <div class="file-input-row">
+                        <label for="fileInput-6-direct" class="button">選擇 XML 檔案（可多選）</label>
+                        <input type="file" id="fileInput-6-direct" accept=".xml" multiple style="display:none;">
+                        <label for="folder-input-6" class="button">選擇資料夾</label>
+                        <input type="file" id="folder-input-6" webkitdirectory directory multiple style="display:none;">
+                        <label for="zip-input-6" class="button">選擇 ZIP 壓縮檔</label>
+                        <input type="file" id="zip-input-6" multiple accept=".zip" style="display:none;">
+                    </div>
+                </div>
+                <div id="fileStatus-6" style="font-size:13px;color:#555;margin-bottom:8px;">尚未選擇檔案</div>
+
+                <!-- 模式選擇 -->
+                <label style="font-weight:bold;">2. 選擇解析模式：</label>
+                <div class="mode-switch">
+					<label><input type="radio" name="mode-6" value="validate" checked onchange="handleModeChange6()"> 模式 1：XML 合規性檢查（字元、格式、ReadingType 規則）</label>
+					<label><input type="radio" name="mode-6" value="extract" onchange="handleModeChange6()"> 模式 2：表號提取（擷取所有表號 + 來源路徑）</label>
+                    <label><input type="radio" name="mode-6" value="search" onchange="handleModeChange6()"> 模式 3：特定表號查詢（依表號過濾，顯示 TimeStamp）</label>
+                    <label><input type="radio" name="mode-6" value="refQuery" onchange="handleModeChange6()"> 模式 4：ReadingType ref 值查詢（特定表號 × 特定 ref 的 value）</label>
+					<label style="margin-bottom:0;"><input type="radio" name="mode-6" value="resetData" onchange="handleModeChange6()"> 模式 5：復歸資料查詢（前次復歸時間 + 次數）</label>
+                    
+                </div>
+
+                <!-- 模式 1 預覽區（可複製下載） -->
+                <div id="extractPreviewArea-6">
+                    <div class="results-header" style="margin-top:10px;">
+                        <h2 style="font-size:15px;">表號預覽：</h2>
+                        <button id="copy-btn-xml6" style="display:none;">複製表號</button>
+                    </div>
+                    <pre id="results-display-xml6">...</pre>
+                    <div id="download-area-xml6"></div>
+                </div>
+
+                <!-- 模式 2：特定表號 -->
+                <div id="filterInputArea-6">
+                    <label style="font-weight:bold;display:block;margin-top:10px;">輸入欲查詢的表號（逗號或換行分隔）：</label>
+                    <textarea id="targetMeters-6" rows="3" placeholder="例如：&#10;1234567890&#10;0987654321"></textarea>
+                </div>
+
+                <!-- 模式 4：ref 查詢 -->
+                <div id="refQueryArea-6">
+                    <label style="font-weight:bold;display:block;margin-top:10px;">輸入欲查詢的表號（逗號或換行分隔）（留空 = 全部）：</label>
+                    <textarea id="refQueryMeters-6" rows="2" placeholder="留空則查詢所有表號"></textarea>
+                    <label style="font-weight:bold;display:block;margin-top:10px;">查詢 ReadingType ref：</label>
+                    <div class="rt-controls">
+                        <button type="button" onclick="selectAllRTs(true)">全選</button>
+                        <button type="button" onclick="selectAllRTs(false)">全不選</button>
+                        <span style="font-size:12px;color:#666;align-self:center;">（不勾選任何項目 = 查詢所有 ref）</span>
+                    </div>
+                    <div class="rt-selector-wrap" id="rtSelectorWrap"></div>
+                    <label style="font-weight:bold;display:block;margin-top:8px;">或手動輸入 ref（逗號或換行分隔，會與上方勾選合併）：</label>
+                    <textarea id="refQueryRefs-6" rows="2" placeholder="例如：11.0.0.0.0.2.12.0.0.0.0.0.0.0.0.0.72.0"></textarea>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:20px;margin-bottom:10px;">
+                <button id="processBtn-6" style="flex:1;padding:12px;font-size:16px;font-weight:bold;">開始解析</button>
+                <button id="clearBtn-6" style="flex:0 0 auto;padding:12px;font-size:16px;background-color:#dc3545;">清除重置</button>
+                <button id="exportBtn-6" style="flex:1;padding:12px;font-size:16px;font-weight:bold;background-color:#34a853;display:none;">匯出 CSV</button>
+            </div>
+
+            <div id="stats-6" class="stats-6" style="display:none;"></div>
+            <div id="validationSummary-6"></div>
+            <div class="table-wrapper-6">
+                <table id="resultTable-6" style="display:none;">
+                    <thead><tr id="tableHeaderRow-6"></tr></thead>
+                    <tbody id="resultBody-6"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 工具三 -->
+        <div id="tool-zip" class="tab-content">
+            <div class="warning"><strong>功能:</strong> 快速整理中繼檔( MDMSL_YYYMMNN.zip )資料夾內所有電號表號及表別。</div>
+            <p>請上傳一個 .zip 壓縮檔。此工具將會對 .txt 檔案內容進行分組與彙總,最終生成一個包含「電號」、「表號」與「表別」的 Excel (.xlsx) 檔案下載連結。</p>
+            <input type="file" id="zipFile-zip" accept=".zip">
+            <div id="status-zip" class="status"></div>
+            <div id="download-area-zip" class="download-area"></div>
+        </div>
+
+        <!-- 工具四 -->
+        <div id="tool-merge-split" class="tab-content">
+            <div class="warning"><strong>功能:</strong> 一次性將多個例外清單合併並整理為 CSV,同時將合併結果根據區處拆分。</div>
+            <p>請選擇多個來源 <code>.xlsx</code> 檔案,工具會自動完成合併、拆分並產生兩個下載連結。</p>
+            <label for="files-merge-split" class="action-label">選擇多個 Excel (.xlsx) 檔案</label>
+            <input type="file" id="files-merge-split" multiple accept=".xlsx" style="display:none;">
+            <span id="file-count-merge-split" style="margin-left:10px;font-size:20px;color:#ed4242;"></span>
+            <div class="options-group">
+                <p>報表日期選項:</p>
+                <input type="radio" id="date-today-merge-split" name="date-option-merge-split" value="today" checked>
+                <label for="date-today-merge-split">使用今天日期</label>
+                <input type="radio" id="date-specify-merge-split" name="date-option-merge-split" value="specify">
+                <label for="date-specify-merge-split">指定日期:</label>
+                <input type="date" id="specified-date-merge-split" disabled>
+            </div>
+            <button id="start-merge-split-btn">開始處理並下載檔案</button>
+            <div id="status-merge-split" class="status"></div>
+            <div id="download-area-merge-split" class="download-links-container" style="display:none;"></div>
+        </div>
+
+        <!-- 工具五 -->
+        <div id="tool-xml-split" class="tab-content">
+            <div class="warning"><strong>功能:</strong> 將大型 XML 檔案 ( >8 MB ) 分割成多個小檔案。</div>
+            <div class="input-group">
+                <label>1. 選擇 XML 檔案 (可多選):</label>
+                <input type="file" id="fileInput-split" accept=".xml" multiple>
+            </div>
+            <div class="input-group">
+                <label>2. 每個檔案包含的 meter_id 數量:</label>
+                <input type="number" id="batchSize-split" value="250" min="1">
+            </div>
+            <button id="processBtn-split">開始處理並下載 ZIP</button>
+            <div id="status-split" class="status" style="display:none;"></div>
+        </div>
+
+    </div>
+</div>
+
+<div id="custom-alert"></div>
+
+<script>
+// =========================================================================
+// 共用
+// =========================================================================
+let alertTimeout;
+function showCustomAlert(message, type = 'info') {
+    const alertBox = document.getElementById('custom-alert');
+    clearTimeout(alertTimeout);
+    alertBox.textContent = message;
+    alertBox.className = '';
+    alertBox.classList.add(type);
+    alertBox.classList.add('show');
+    alertTimeout = setTimeout(() => { alertBox.classList.remove('show'); }, 3000);
+}
+function setupTabs(tabLinksSelector, tabContentSelector) {
+    const tabs = document.querySelectorAll(tabLinksSelector);
+    const contents = document.querySelectorAll(tabContentSelector);
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetId = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(targetId).classList.add('active');
         });
+    });
+}
+document.addEventListener('DOMContentLoaded', () => { setupTabs('.tab-container .tab-link', '.content-container .tab-content'); });
+function copyFallback(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text; textarea.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(textarea);
+    let success = false;
+    try { textarea.focus(); textarea.select(); success = document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(textarea);
+    return success;
+}
 
-        
-        // =========================================================================
-        // --- 工具一: CSV/XML 表號比對邏輯 ---
-        // =========================================================================
-		(function() {
-			const dropZone = document.getElementById('drop-zone');
-			const status = document.getElementById('status-compare');
-			const resultBody = document.getElementById('result-body-compare');
-			const copyBtn = document.getElementById('copy-btn-compare');
-			const downloadXlsxBtn = document.getElementById('download-xlsx-btn-compare'); 
-			const hescodeFilter = document.getElementById('hescode-filter'); 
-			const filteredCountSpan = document.getElementById('filtered-count');
-
-			const FIELD_MAPPING = {
-				'meter_id': ['meter_id', '表號'],
-				'cust_id': ['cust_id', '電號'],
-				'address': ['address', '地址', '用電地址'],
-				'hescode': ['hescode'], 
-				'demand': ['demand', '需量', '需量(t/f)', '需量(T/F)']
-			};
-			
-			let allMissingEntries = []; 
-			let currentFilteredEntries = [];
-			let processedZipCount = 0; // 用於顯示進度
-
-			// 初始化介面
-			status.style.display = 'block';
-			resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">結果將顯示於此</td></tr>';
-
-			dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-			dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
-			dropZone.addEventListener('drop', (e) => {
-				e.preventDefault();
-				dropZone.classList.remove('dragover');
-				handleFiles(e.dataTransfer.files);
-			});
-
-			async function handleFiles(files) {
-				let csvFile = null; 
-				let zipFiles = [];
-
-				for (const file of Array.from(files)) {
-					const lowerName = file.name.toLowerCase();
-					if (lowerName.endsWith('.csv') || lowerName.endsWith('.tsv') || lowerName.endsWith('.txt')) {
-						csvFile = file;
-					} else if (lowerName.endsWith('.zip')) {
-						zipFiles.push(file);
-					}
-				}
-
-				if (!csvFile || zipFiles.length === 0) {
-					status.textContent = '錯誤: 請務必提供「一個 CSV」以及「至少一個 ZIP」檔案。';
-					status.style.color = 'red';
-					return;
-				}
-
-				status.textContent = '正在準備處理...';
-				status.style.color = 'blue';
-				resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">正在處理中...</td></tr>';
-				processedZipCount = 0;
-
-				try {
-					// 1. 解析 CSV
-					status.textContent = '步驟 1/3: 正在讀取 CSV 檔案...';
-					const csvData = await parseCSV(csvFile, FIELD_MAPPING); 
-
-					// 2. 遞迴解析所有 ZIP
-					status.textContent = '步驟 2/3: 正在遞迴掃描 ZIP 內容 (包含子 ZIP)...';
-					const allZipMeterIds = new Set();
-					
-					for (const zFile of zipFiles) {
-						const zipNamesSet = await parseZIPRecursive(zFile);
-						zipNamesSet.forEach(id => allZipMeterIds.add(id));
-					}
-					
-					// 3. 比較與排序
-					status.textContent = '步驟 3/3: 正在比較資料並排序...';
-					let missingEntries = compareData(csvData, allZipMeterIds);
-					missingEntries = sortMissingEntries(missingEntries);
-
-					displayResults(missingEntries); 
-
-				} catch (error) {
-					console.error(error);
-					status.textContent = `錯誤: ${error.message}`;
-					status.style.color = 'red';
-				}
-			}
-
-			/**
-			 * 核心邏輯：遞迴解析 ZIP 檔案
-			 * @param {File|Blob|Uint8Array} fileData 檔案內容
-			 * @returns {Set} 該 ZIP 內含的所有 Meter ID
-			 */
-			async function parseZIPRecursive(fileData) {
-				const namesSet = new Set();
-				const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
-				
-				try {
-					const zip = await JSZip.loadAsync(fileData);
-					const entries = Object.keys(zip.files);
-
-					for (const fileName of entries) {
-						const zipEntry = zip.files[fileName];
-						if (zipEntry.dir) continue;
-
-						const lowerName = fileName.toLowerCase();
-
-						// 如果內部還有 ZIP，則進入遞迴
-						if (lowerName.endsWith('.zip')) {
-							const subZipContent = await zipEntry.async('uint8array');
-							const subSet = await parseZIPRecursive(subZipContent);
-							subSet.forEach(id => namesSet.add(id));
-						} 
-						// 如果是 XML，提取名稱
-						else if (lowerName.endsWith('.xml')) {
-							const content = await zipEntry.async('string');
-							let match;
-							while ((match = regex.exec(content)) !== null) {
-								namesSet.add(match[1].trim().toUpperCase());
-							}
-						}
-					}
-				} catch (err) {
-					console.error("ZIP 處理出錯:", err);
-				}
-				return namesSet;
-			}
-
-			// --- 以下為原有邏輯的整合 (parseCSV, compareData, displayResults 等不變或微調) ---
-
-			function parseCSV(file, mapping) {
-				return new Promise((resolve, reject) => {
-					Papa.parse(file, {
-						delimiter: "", // 自動偵測
-						skipEmptyLines: true,
-						encoding: "UTF-8",
-						header: true,
-						transformHeader: (header) => String(header).trim().toLowerCase(),
-						complete: (results) => {
-							const headerNames = results.meta.fields || [];
-							const mappedFields = {};
-							for (const targetField in mapping) {
-								const foundHeader = mapping[targetField].find(alias => headerNames.includes(alias.toLowerCase()));
-								if (foundHeader) mappedFields[targetField] = foundHeader.toLowerCase();
-							}
-
-							if (!mappedFields.meter_id) return reject(new Error('CSV 內找不到表號欄位'));
-
-							const mappedData = results.data
-								.map(row => ({
-									cust_id: row[mappedFields.cust_id] || '',
-									meter_id: String(row[mappedFields.meter_id] || '').trim().toUpperCase(),
-									address: row[mappedFields.address] || '',
-									hescode: row[mappedFields.hescode] || '',
-									demand: String(row[mappedFields.demand] || '').trim().toUpperCase()
-								}))
-								.filter(item => item.meter_id);
-							resolve(mappedData);
-						},
-						error: (err) => reject(err)
-					});
-				});
-			}
-
-			function compareData(csvData, zipNamesSet) {
-				return csvData.filter(csvRow => !zipNamesSet.has(csvRow.meter_id));
-			}
-
-			function sortMissingEntries(entries) {
-				return entries.sort((a, b) => {
-					// 先比 Hescode
-					if (a.hescode !== b.hescode) return (a.hescode || '').localeCompare(b.hescode || '');
-					// 再比 Demand (T 先於 F)
-					if (a.demand !== b.demand) return a.demand === 'T' ? -1 : 1;
-					// 最後比表號
-					return a.meter_id.localeCompare(b.meter_id);
-				});
-			}
-
-			function displayResults(missingEntries) {
-				allMissingEntries = missingEntries;
-				if (missingEntries.length === 0) {
-					status.textContent = '比對完成：全部符合！';
-					status.style.color = 'green';
-					resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無差異資料</td></tr>';
-					return;
-				}
-
-				status.textContent = `比對完成：CSV 中有 ${missingEntries.length} 筆不存在於 ZIP 中。`;
-				status.style.color = 'darkorange';
-				
-				populateHescodeFilter(missingEntries);
-				filterAndDisplayResults(missingEntries, 'all');
-				
-				if (downloadXlsxBtn) {
-					downloadXlsxBtn.style.display = 'inline-block';
-					downloadXlsxBtn.onclick = () => downloadXLSX(allMissingEntries);
-				}
-			}
-            
-            function populateHescodeFilter(entries) {
-                const uniqueHescodes = new Set();
-                entries.forEach(entry => {
-                    if (entry.hescode && String(entry.hescode).trim() !== '') {
-                        uniqueHescodes.add(entry.hescode);
-                    }
-                });
-                
-                const sortedHescodes = Array.from(uniqueHescodes).sort();
-                
-                let optionsHtml = '<option value="all">所有 Hescode</option>';
-                sortedHescodes.forEach(code => {
-                    optionsHtml += `<option value="${code}">${code}</option>`;
-                });
-                
-                hescodeFilter.innerHTML = optionsHtml;
-                hescodeFilter.value = 'all';
+// =========================================================================
+// 工具一: CSV/XML 表號比對
+// =========================================================================
+(function() {
+    const dropZone = document.getElementById('drop-zone');
+    const status = document.getElementById('status-compare');
+    const resultBody = document.getElementById('result-body-compare');
+    const copyBtn = document.getElementById('copy-btn-compare');
+    const downloadXlsxBtn = document.getElementById('download-xlsx-btn-compare');
+    const hescodeFilter = document.getElementById('hescode-filter');
+    const filteredCountSpan = document.getElementById('filtered-count');
+    const FIELD_MAPPING = { 'meter_id':['meter_id','表號'], 'cust_id':['cust_id','電號'], 'address':['address','地址','用電地址'], 'hescode':['hescode'], 'demand':['demand','需量','需量(t/f)','需量(T/F)'] };
+    let allMissingEntries = [], currentFilteredEntries = [];
+    status.style.display = 'block';
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+    async function handleFiles(files) {
+        let csvFile = null, zipFiles = [];
+        for (const file of Array.from(files)) { const n = file.name.toLowerCase(); if (n.endsWith('.csv')||n.endsWith('.tsv')||n.endsWith('.txt')) csvFile=file; else if (n.endsWith('.zip')) zipFiles.push(file); }
+        if (!csvFile || !zipFiles.length) { status.textContent='錯誤: 請務必提供「一個 CSV」以及「至少一個 ZIP」檔案。'; status.style.color='red'; return; }
+        status.textContent='正在準備處理...'; status.style.color='blue';
+        resultBody.innerHTML='<tr><td colspan="5" style="text-align:center;">正在處理中...</td></tr>';
+        try {
+            status.textContent='步驟 1/3: 正在讀取 CSV...';
+            const csvData = await parseCSV(csvFile, FIELD_MAPPING);
+            status.textContent='步驟 2/3: 正在遞迴掃描 ZIP...';
+            const allZipMeterIds = new Set();
+            for (const zFile of zipFiles) { const s = await parseZIPRecursive(zFile); s.forEach(id => allZipMeterIds.add(id)); }
+            status.textContent='步驟 3/3: 正在比較排序...';
+            let missing = csvData.filter(r => !allZipMeterIds.has(r.meter_id));
+            missing.sort((a,b) => { if(a.hescode!==b.hescode) return (a.hescode||'').localeCompare(b.hescode||''); if(a.demand!==b.demand) return a.demand==='T'?-1:1; return a.meter_id.localeCompare(b.meter_id); });
+            displayResults(missing);
+        } catch(err) { status.textContent=`錯誤: ${err.message}`; status.style.color='red'; }
+    }
+    async function parseZIPRecursive(fileData) {
+        const namesSet = new Set();
+        const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
+        try {
+            const zip = await JSZip.loadAsync(fileData);
+            for (const fileName of Object.keys(zip.files)) {
+                const entry = zip.files[fileName]; if (entry.dir) continue;
+                const lower = fileName.toLowerCase();
+                if (lower.endsWith('.zip')) { const sub = await entry.async('uint8array'); const subSet = await parseZIPRecursive(sub); subSet.forEach(id => namesSet.add(id)); }
+                else if (lower.endsWith('.xml')) { const content = await entry.async('string'); let m; regex.lastIndex=0; while((m=regex.exec(content))!==null) namesSet.add(m[1].trim().toUpperCase()); }
             }
+        } catch(err) { console.error('ZIP 處理出錯:', err); }
+        return namesSet;
+    }
+    function parseCSV(file, mapping) {
+        return new Promise((resolve, reject) => {
+            Papa.parse(file, { delimiter:'', skipEmptyLines:true, encoding:'UTF-8', header:true, transformHeader:h=>String(h).trim().toLowerCase(),
+                complete: results => {
+                    const headers = results.meta.fields||[], mapped={};
+                    for (const tf in mapping) { const fh = mapping[tf].find(a=>headers.includes(a.toLowerCase())); if(fh) mapped[tf]=fh.toLowerCase(); }
+                    if (!mapped.meter_id) return reject(new Error('CSV 內找不到表號欄位'));
+                    resolve(results.data.map(row=>({ cust_id:row[mapped.cust_id]||'', meter_id:String(row[mapped.meter_id]||'').trim().toUpperCase(), address:row[mapped.address]||'', hescode:row[mapped.hescode]||'', demand:String(row[mapped.demand]||'').trim().toUpperCase() })).filter(i=>i.meter_id));
+                }, error: err => reject(err) });
+        });
+    }
+    function displayResults(missing) {
+        allMissingEntries = missing;
+        if (!missing.length) { status.textContent='比對完成：全部符合！'; status.style.color='green'; resultBody.innerHTML='<tr><td colspan="5" style="text-align:center;">無差異資料</td></tr>'; return; }
+        status.textContent=`比對完成：CSV 中有 ${missing.length} 筆不存在於 ZIP 中。`; status.style.color='darkorange';
+        const codes = new Set(missing.map(e=>e.hescode).filter(Boolean));
+        let opts='<option value="all">所有 Hescode</option>';
+        Array.from(codes).sort().forEach(c=>{ opts+=`<option value="${c}">${c}</option>`; });
+        hescodeFilter.innerHTML=opts; hescodeFilter.value='all';
+        filterAndDisplay(missing,'all');
+        if (downloadXlsxBtn) { downloadXlsxBtn.style.display='inline-block'; downloadXlsxBtn.onclick=()=>downloadXLSX(allMissingEntries); }
+    }
+    function filterAndDisplay(all, sel) {
+        const list = sel==='all' ? all : all.filter(e=>e.hescode===sel);
+        currentFilteredEntries = list;
+        filteredCountSpan.textContent=`(共 ${list.length} 筆)`;
+        const copyStr = list.map(e=>`${e.cust_id}\t${e.meter_id}`).join('\n');
+        copyBtn.style.display='inline-block';
+        copyBtn.onclick = () => {
+            if (!list.length) { showCustomAlert('目前篩選結果為空。','error'); return; }
+            if (navigator.clipboard?.writeText) navigator.clipboard.writeText(copyStr).then(()=>showCustomAlert(`已複製 ${list.length} 筆`,'success'), ()=>{ if(copyFallback(copyStr)) showCustomAlert(`已複製 ${list.length} 筆`,'success'); else showCustomAlert('複製失敗','error'); });
+            else { if(copyFallback(copyStr)) showCustomAlert(`已複製 ${list.length} 筆`,'success'); else showCustomAlert('複製失敗','error'); }
+        };
+        resultBody.innerHTML='';
+        if (!list.length) { resultBody.innerHTML='<tr><td colspan="5" style="text-align:center;">無符合資料</td></tr>'; copyBtn.style.display='none'; if(downloadXlsxBtn) downloadXlsxBtn.style.display='none'; return; }
+        const LIMIT=1000, render=list.slice(0,LIMIT);
+        if (list.length>LIMIT) { let t=status.textContent.split(' (為防止')[0]; status.textContent=t+` (頁面僅顯示前 ${LIMIT} 筆，複製/下載包含全部)`; }
+        render.forEach(e=>{ const tr=document.createElement('tr'); ['cust_id','meter_id','address','hescode','demand'].forEach(k=>{ const td=document.createElement('td'); td.textContent=e[k]; tr.appendChild(td); }); resultBody.appendChild(tr); });
+    }
+    function downloadXLSX(data) {
+        const ws=XLSX.utils.aoa_to_sheet([['Cust ID','Meter ID','地址','HES Code','需量(T/F)'],...data.map(i=>[i.cust_id,i.meter_id,i.address,i.hescode,i.demand])]);
+        const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'比對結果');
+        XLSX.writeFile(wb,`比對差異結果_${new Date().toISOString().slice(0,10)}.xlsx`); showCustomAlert('XLSX 已下載！','success');
+    }
+    hescodeFilter.addEventListener('change', ()=>filterAndDisplay(allMissingEntries, hescodeFilter.value));
+})();
 
-            function filterAndDisplayResults(allEntries, selectedHescode) {
-                let entriesToDisplay = allEntries;
-                
-                if (selectedHescode && selectedHescode !== 'all') {
-                    entriesToDisplay = allEntries.filter(entry => entry.hescode === selectedHescode);
-                }
-                
-                currentFilteredEntries = entriesToDisplay; 
-                
-                if (filteredCountSpan) filteredCountSpan.textContent = `(共 ${currentFilteredEntries.length} 筆)`;
-                
-                let copyString = ""; 
-                currentFilteredEntries.forEach(entry => {
-                    const custId = entry.cust_id || '';
-                    const meterId = entry.meter_id || '';
-                    copyString += `${custId}\t${meterId}\n`;
-                });
-                
-                copyBtn.style.display = 'inline-block';
-                
-                copyBtn.onclick = () => {
-                    if (currentFilteredEntries.length === 0) {
-                        showCustomAlert('目前篩選結果為空,無法複製。', 'error'); 
-                        return;
+// =========================================================================
+// 工具二：XML 綜合解析（整合原工具二 + 原工具六）
+// =========================================================================
+(function() {
+    // ── ReadingType 定義表 ──
+    const RT_DEFS = [
+        {id:'3',  name:'電池使用時間',          rule:'long',    code:'11.0.0.0.0.2.119.0.0.0.0.0.0.0.0.0.159.0'},
+        {id:'4',  name:'程式ID號碼 (TOU_id)',    rule:'string6', code:'11.0.0.0.0.2.167.0.0.0.0.0.0.0.0.0.0.0'},
+        {id:'5',  name:'最近一次需量復歸時間',   rule:'iso8601', code:'11.22.103.0.0.2.122.0.0.0.0.0.0.0.0.0.108.0'},
+        {id:'6',  name:'售電最大需量之時間',     rule:'iso8601', code:'11.8.0.0.1.2.8.0.0.0.0.0.0.0.0.0.108.0'},
+        {id:'8a', name:'變比器倍數',             rule:'long',    code:'0.0.0.0.0.2.166.0.0.0.0.0.0.0.0.0.0.0'},
+        {id:'8b', name:'CT 比',                  rule:'integer', code:'0.0.0.0.0.2.168.0.0.0.0.0.0.0.0.0.0.0'},
+        {id:'8c', name:'PT 比',                  rule:'integer', code:'0.0.0.0.0.2.169.0.0.0.0.0.0.0.0.0.0.0'},
+        {id:'9',  name:'售電總kWh',              rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.0.0.0.0.3.72.0'},
+        {id:'10', name:'售電尖峰kWh',            rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.1.0.0.0.3.72.0'},
+        {id:'11', name:'售電尖峰需量(指示)',     rule:'double',  code:'11.0.0.6.1.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'12', name:'售電尖峰需量(累計)',     rule:'double',  code:'11.0.0.3.1.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'13', name:'售電尖峰需量(連續累計)', rule:'double',  code:'11.0.0.2.1.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'14', name:'售電平日半尖峰kWh',      rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.2.0.0.0.3.72.0'},
+        {id:'15', name:'售電平日半尖峰需量(指示)',rule:'double', code:'11.0.0.6.1.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'16', name:'售電平日半尖峰需量(累計)',rule:'double', code:'11.0.0.3.1.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'17', name:'售電平日半尖峰需量(連續累計)',rule:'double',code:'11.0.0.2.1.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'18', name:'售電離峰kWh',            rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.3.0.0.0.3.72.0'},
+        {id:'19', name:'售電離峰需量(指示)',     rule:'double',  code:'11.0.0.6.1.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'20', name:'售電離峰需量(累計)',     rule:'double',  code:'11.0.0.3.1.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'21', name:'售電離峰需量(連續累計)', rule:'double',  code:'11.0.0.2.1.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'22', name:'售電週六半尖峰kWh',      rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.4.0.0.0.3.72.0'},
+        {id:'23', name:'售電週六半尖峰需量(指示)',rule:'double', code:'11.0.0.6.1.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'24', name:'售電週六半尖峰需量(累計)',rule:'double', code:'11.0.0.3.1.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'25', name:'售電週六半尖峰需量(連續累計)',rule:'double',code:'11.0.0.2.1.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'27', name:'需量時段剩餘時間(秒)',   rule:'integer_0_3600', code:'11.0.104.0.0.2.8.0.0.0.0.0.0.0.0.0.27.0'},
+        {id:'28', name:'需量復歸次數',           rule:'integer', code:'11.0.0.0.0.2.122.0.0.0.0.0.0.0.0.0.111.0'},
+        {id:'30', name:'總售電kVArh(Q1)',        rule:'double',  code:'11.0.2.9.15.2.164.0.0.0.0.0.0.0.0.3.73.0'},
+        {id:'31', name:'總售電kVArh(Q2)',        rule:'double',  code:'11.0.0.9.16.2.164.0.0.0.0.0.0.0.0.3.73.0'},
+        {id:'32', name:'總購電kVArh(Q3)',        rule:'double',  code:'11.0.0.9.17.2.164.0.0.0.0.0.0.0.0.3.73.0'},
+        {id:'33', name:'總購電kVArh(Q4)',        rule:'double',  code:'11.0.2.9.18.2.164.0.0.0.0.0.0.0.0.3.73.0'},
+        {id:'50', name:'最後程式日期',           rule:'iso8601', code:'0.22.103.0.0.2.139.0.0.0.0.0.0.0.0.0.108.0'},
+        {id:'90', name:'中性線電流過高',         rule:'boolean', code:'0.4.0.0.0.2.4.0.0.0.0.0.0.0.16.0.109.0'},
+        {id:'106',name:'購電最大需量時間',       rule:'iso8601', code:'11.8.0.0.19.2.8.0.0.0.0.0.0.0.0.0.108.0'},
+        {id:'109',name:'購電總kWh',              rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.0.0.0.0.3.72.0'},
+        {id:'110',name:'購電尖峰kWh',            rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.1.0.0.0.3.72.0'},
+        {id:'111',name:'購電尖峰需量(指示)',     rule:'double',  code:'11.0.0.6.19.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'112',name:'購電尖峰需量(累計)',     rule:'double',  code:'11.0.0.3.19.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'113',name:'購電尖峰需量(連續累計)', rule:'double',  code:'11.0.0.2.19.2.8.0.0.0.0.1.0.0.0.3.38.0'},
+        {id:'114',name:'購電平日半尖峰kWh',      rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.2.0.0.0.3.72.0'},
+        {id:'115',name:'購電平日半尖峰需量(指示)',rule:'double', code:'11.0.0.6.19.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'116',name:'購電平日半尖峰需量(累計)',rule:'double', code:'11.0.0.3.19.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'117',name:'購電平日半尖峰需量(連續累計)',rule:'double',code:'11.0.0.2.19.2.8.0.0.0.0.2.0.0.0.3.38.0'},
+        {id:'118',name:'購電離峰kWh',            rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.3.0.0.0.3.72.0'},
+        {id:'119',name:'購電離峰需量(指示)',     rule:'double',  code:'11.0.0.6.19.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'120',name:'購電離峰需量(累計)',     rule:'double',  code:'11.0.0.3.19.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'121',name:'購電離峰需量(連續累計)', rule:'double',  code:'11.0.0.2.19.2.8.0.0.0.0.3.0.0.0.3.38.0'},
+        {id:'122',name:'購電週六半尖峰kWh',      rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.4.0.0.0.3.72.0'},
+        {id:'123',name:'購電週六半尖峰需量(指示)',rule:'double', code:'11.0.0.6.19.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'124',name:'購電週六半尖峰需量(累計)',rule:'double', code:'11.0.0.3.19.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'125',name:'購電週六半尖峰需量(連續累計)',rule:'double',code:'11.0.0.2.19.2.8.0.0.0.0.4.0.0.0.3.38.0'},
+        {id:'201',name:'瞬時kVA',               rule:'double',  code:'11.0.0.12.0.2.12.0.0.0.0.0.0.0.0.3.61.0'},
+        {id:'202',name:'瞬時需量kW',            rule:'double',  code:'11.0.0.12.0.2.8.0.0.0.0.0.0.0.0.3.38.0'},
+        {id:'203',name:'瞬時功率因數',          rule:'float_pf', code:'11.0.0.12.0.2.38.0.0.0.0.0.0.0.0.0.65.0'},
+        {id:'205',name:'售電尖峰最大需量時間',  rule:'iso8601', code:'11.8.0.0.1.2.8.0.0.0.0.1.0.0.0.0.108.0'},
+        {id:'207',name:'售電平日半尖峰最大需量時間',rule:'iso8601',code:'11.8.0.0.1.2.8.0.0.0.0.2.0.0.0.0.108.0'},
+        {id:'209',name:'售電離峰最大需量時間',  rule:'iso8601', code:'11.8.0.0.1.2.8.0.0.0.0.3.0.0.0.0.108.0'},
+        {id:'211',name:'售電週六半尖峰最大需量時間',rule:'iso8601',code:'11.8.0.0.1.2.8.0.0.0.0.4.0.0.0.0.108.0'},
+        {id:'330',name:'購電瞬時需量kW',        rule:'double',  code:'0.0.0.12.19.2.8.0.0.0.0.0.0.0.0.3.38.0'},
+        {id:'1E1',name:'購電E峰kWh',            rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.5.0.0.0.3.72.0'},
+        {id:'1E2',name:'購電E峰需量(指示)',     rule:'double',  code:'11.0.0.6.19.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'1E3',name:'購電E峰需量(累計)',     rule:'double',  code:'11.0.0.3.19.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'1E4',name:'購電E峰需量(連續累計)', rule:'double',  code:'11.0.0.2.19.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'1F1',name:'購電F峰kWh',            rule:'double',  code:'11.0.0.9.19.2.12.0.0.0.0.6.0.0.0.3.72.0'},
+        {id:'1F2',name:'購電F峰需量(指示)',     rule:'double',  code:'11.0.0.6.19.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'1F3',name:'購電F峰需量(累計)',     rule:'double',  code:'11.0.0.3.19.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'1F4',name:'購電F峰需量(連續累計)', rule:'double',  code:'11.0.0.2.19.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'E1', name:'售電E峰kWh',            rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.5.0.0.0.3.72.0'},
+        {id:'E2', name:'售電E峰需量(指示)',     rule:'double',  code:'11.0.0.6.1.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'E3', name:'售電E峰需量(累計)',     rule:'double',  code:'11.0.0.3.1.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'E4', name:'售電E峰需量(連續累計)', rule:'double',  code:'11.0.0.2.1.2.8.0.0.0.0.5.0.0.0.3.38.0'},
+        {id:'F1', name:'售電F峰kWh',            rule:'double',  code:'11.0.0.9.1.2.12.0.0.0.0.6.0.0.0.3.72.0'},
+        {id:'F2', name:'售電F峰需量(指示)',     rule:'double',  code:'11.0.0.6.1.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'F3', name:'售電F峰需量(累計)',     rule:'double',  code:'11.0.0.3.1.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'F4', name:'售電F峰需量(連續累計)', rule:'double',  code:'11.0.0.2.1.2.8.0.0.0.0.6.0.0.0.3.38.0'},
+        {id:'DE1',name:'售電E峰最大需量時間',   rule:'iso8601', code:'11.8.0.0.1.2.8.0.0.0.0.5.0.0.0.0.108.0'},
+        {id:'DF1',name:'售電F峰最大需量時間',   rule:'iso8601', code:'11.8.0.0.1.2.8.0.0.0.0.6.0.0.0.0.108.0'},
+        {id:'NW', name:'中性線電流警告值',      rule:'float',   code:'0.5.0.0.0.2.4.0.0.0.0.0.0.0.16.0.5.0'},
+    ];
+    const RT_MAP = {};
+    RT_DEFS.forEach(d => { RT_MAP[d.code] = d; });
+
+    // ── 規則驗證函式 ──
+    function validateValue(rule, val) {
+        const v = String(val).trim();
+        if (v === '' || v === 'N/A') return { ok: false, msg: '值為空' };
+        switch (rule) {
+            case 'double':
+                return isNaN(Number(v)) ? { ok:false, msg:`非數值 (double): "${v}"` } : { ok:true };
+            case 'float':
+                return isNaN(Number(v)) ? { ok:false, msg:`非數值 (float): "${v}"` } : { ok:true };
+            case 'float_pf': {
+                const n = Number(v);
+                if (isNaN(n)) return { ok:false, msg:`非數值 (float PF): "${v}"` };
+                // scaler -2, 即實際值 = n * 0.01，範圍 -1 ~ 1
+                const actual = n * 0.01;
+                if (actual < -1 || actual > 1) return { ok:false, msg:`功率因數超出範圍 (-100~100，scaler=-2): ${v}` };
+                return { ok:true };
+            }
+            case 'integer':
+                return (!Number.isInteger(Number(v)) || v.includes('.')) ? { ok:false, msg:`非整數 (integer): "${v}"` } : { ok:true };
+            case 'integer_0_3600': {
+                const n = Number(v);
+                if (!Number.isInteger(n) || v.includes('.')) return { ok:false, msg:`非整數 (integer): "${v}"` };
+                if (n < 0 || n > 3600) return { ok:false, msg:`超出範圍 0-3600 (秒): ${v}` };
+                return { ok:true };
+            }
+            case 'long':
+                return (!Number.isInteger(Number(v)) || v.includes('.')) ? { ok:false, msg:`非整數 (long): "${v}"` } : { ok:true };
+            case 'boolean':
+                return (!['0','1','true','false'].includes(v.toLowerCase())) ? { ok:false, msg:`非布林值 (0/1/true/false): "${v}"` } : { ok:true };
+            case 'string6':
+                return (v.length > 6) ? { ok:false, msg:`字串超過6字元 (len=${v.length}): "${v}"` } : { ok:true };
+            case 'iso8601': {
+				// 1. 接受字串 "None" (不分大小寫)
+				if (typeof v === 'string' && v.toLowerCase() === 'none') {
+						return { ok: true };
+					}			
+                // 接受 ISO 8601 或 epoch 秒數（數字字串）
+                const n = Number(v);
+                if (!isNaN(n) && v.length >= 8) return { ok:true }; // epoch
+                const ISO = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$/.test(v);
+                return ISO ? { ok:true } : { ok:false, msg:`非 ISO 8601 時間格式: "${v}"` };
+            }
+            default:
+                return { ok:true };
+        }
+    }
+
+    // ── 建立 RT 下拉選單 ──
+    function buildRTSelector() {
+        const wrap = document.getElementById('rtSelectorWrap');
+        wrap.innerHTML = RT_DEFS.map(d => `
+            <label>
+                <input type="checkbox" name="rt-check" value="${d.code}">
+                <span>${d.id} ${d.name}<span class="rt-code">${d.code}</span></span>
+            </label>`).join('');
+    }
+    buildRTSelector();
+
+    window.selectAllRTs = function(val) {
+        document.querySelectorAll('#rtSelectorWrap input[type="checkbox"]').forEach(cb => { cb.checked = val; });
+    };
+
+    // ── 檔案收集邏輯 ──
+    let collectedFiles = []; // { name, getText() }
+    const dropArea6 = document.getElementById('drop-area-xml6');
+    const fileStatus6 = document.getElementById('fileStatus-6');
+
+    function updateFileStatus() {
+        fileStatus6.textContent = collectedFiles.length ? `已收集 ${collectedFiles.length} 個 XML 檔案` : '尚未選擇檔案';
+    }
+
+    async function collectFromFiles(fileList) {
+        for (const file of Array.from(fileList)) {
+            const lower = file.name.toLowerCase();
+            if (lower.endsWith('.xml')) {
+                const text = await file.text();
+                collectedFiles.push({ name: file.webkitRelativePath || file.name, getText: () => text });
+            } else if (lower.endsWith('.zip')) {
+                try {
+                    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+                    for (const [fname, entry] of Object.entries(zip.files)) {
+                        if (!entry.dir && fname.toLowerCase().endsWith('.xml')) {
+                            const text = await entry.async('string');
+                            collectedFiles.push({ name: `${file.name}/${fname}`, getText: () => text });
+                        }
                     }
+                } catch(e) { console.error('ZIP 讀取失敗', e); }
+            }
+        }
+        updateFileStatus();
+    }
 
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(copyString).then(() => {
-                            showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
-                        }, (err) => {
-                            console.warn("Clipboard API 失敗,嘗試 Fallback 複製...", err);
-                            if (copyFallback(copyString)) {
-                                showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
-                            } else {
-                                showCustomAlert('複製失敗! 請檢查瀏覽器權限或嘗試手動複製。', 'error'); 
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => dropArea6.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); }));
+    ['dragenter','dragover'].forEach(ev => dropArea6.addEventListener(ev, ()=>dropArea6.classList.add('highlight')));
+    ['dragleave','drop'].forEach(ev => dropArea6.addEventListener(ev, ()=>dropArea6.classList.remove('highlight')));
+    dropArea6.addEventListener('drop', e => collectFromFiles(e.dataTransfer.files));
+    document.getElementById('fileInput-6-direct').addEventListener('change', e=>collectFromFiles(e.target.files));
+    document.getElementById('folder-input-6').addEventListener('change', e=>collectFromFiles(e.target.files));
+    document.getElementById('zip-input-6').addEventListener('change', e=>collectFromFiles(e.target.files));
+
+    // ── 模式切換 ──
+    window.handleModeChange6 = function() {
+        const mode = document.querySelector('input[name="mode-6"]:checked').value;
+        document.getElementById('extractPreviewArea-6').style.display = (mode === 'extract')   ? 'block' : 'none';
+        document.getElementById('filterInputArea-6').style.display    = (mode === 'search')    ? 'block' : 'none';
+        document.getElementById('refQueryArea-6').style.display       = (mode === 'refQuery')  ? 'block' : 'none';
+        document.getElementById('validationArea-6').style.display     = (mode === 'validate')  ? 'block' : 'none';
+    };
+
+    // ── 主狀態 ──
+    let finalData6 = [];
+    let currentSort6 = { column: null, asc: true };
+    let currentMode6 = 'extract';
+    // 模式1 累積資料（支援清除）
+    let extractCsvData = [];
+
+    const stats6        = document.getElementById('stats-6');
+    const resultTable6  = document.getElementById('resultTable-6');
+    const tableHeaderRow6 = document.getElementById('tableHeaderRow-6');
+    const resultBody6   = document.getElementById('resultBody-6');
+    const exportBtn6    = document.getElementById('exportBtn-6');
+    const validationSummary6 = document.getElementById('validationSummary-6');
+
+    // 清除按鈕
+    document.getElementById('clearBtn-6').addEventListener('click', () => {
+        collectedFiles = []; extractCsvData = []; finalData6 = [];
+        updateFileStatus();
+        stats6.style.display='none'; resultTable6.style.display='none'; exportBtn6.style.display='none';
+        validationSummary6.style.display='none'; validationSummary6.innerHTML='';
+        document.getElementById('results-display-xml6').textContent='...';
+        document.getElementById('download-area-xml6').innerHTML='';
+        document.getElementById('copy-btn-xml6').style.display='none';
+        // reset file inputs
+        ['fileInput-6-direct','folder-input-6','zip-input-6'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        showCustomAlert('已清除所有資料','success');
+    });
+
+    // 模式1 複製按鈕
+    document.getElementById('copy-btn-xml6').addEventListener('click', async () => {
+        const text = document.getElementById('results-display-xml6').textContent;
+        const finish = ok => { showCustomAlert(ok?`已複製 ${extractCsvData.length} 筆表號`:'複製失敗', ok?'success':'error'); };
+        if (navigator.clipboard?.writeText) { try { await navigator.clipboard.writeText(text); finish(true); } catch(e){ finish(copyFallback(text)); } }
+        else finish(copyFallback(text));
+    });
+
+    // ── 主按鈕 ──
+    document.getElementById('processBtn-6').addEventListener('click', async () => {
+        if (!collectedFiles.length) { showCustomAlert('請先選擇或拖入 XML 檔案', 'error'); return; }
+        const mode = document.querySelector('input[name="mode-6"]:checked').value;
+        currentMode6 = mode;
+
+        let searchSet = new Set();
+        if (mode === 'search') {
+            const inp = document.getElementById('targetMeters-6').value;
+            searchSet = new Set(inp.split(/[,\n\s]+/).map(s=>s.trim()).filter(Boolean));
+            if (!searchSet.size) { showCustomAlert('模式 2 請輸入欲查詢的表號', 'error'); return; }
+        }
+
+        let refMeterSet = new Set(), refSet = new Set();
+        if (mode === 'refQuery') {
+            const mInp = document.getElementById('refQueryMeters-6').value;
+            refMeterSet = new Set(mInp.split(/[,\n]+/).map(s=>s.trim()).filter(Boolean));
+            // 從下拉勾選
+            document.querySelectorAll('#rtSelectorWrap input[type="checkbox"]:checked').forEach(cb => refSet.add(cb.value));
+            // 從手動輸入
+            const rInp = document.getElementById('refQueryRefs-6').value;
+            rInp.split(/[,\n]+/).map(s=>s.trim()).filter(Boolean).forEach(r => refSet.add(r));
+        }
+
+        finalData6 = [];
+        stats6.style.display='block'; stats6.innerText='解析中，請稍候...';
+        stats6.style.background='#e8f0fe'; stats6.style.borderLeftColor='#1a73e8';
+        resultTable6.style.display='none'; exportBtn6.style.display='none';
+        validationSummary6.style.display='none'; validationSummary6.innerHTML='';
+
+        if (mode === 'validate') { await runValidation(); return; }
+        if (mode === 'extract')  { await runExtract(); return; }
+
+        // 模式 2 / 3 / 4：DOMParser
+        const parser = new DOMParser();
+        for (let f=0; f<collectedFiles.length; f++) {
+            stats6.innerText = `解析中… (${f+1}/${collectedFiles.length}) ${collectedFiles[f].name}`;
+            const rawText = collectedFiles[f].getText();
+            const xmlDoc = parser.parseFromString(rawText, 'application/xml');
+            if (xmlDoc.getElementsByTagName('parsererror').length) {
+                finalData6.push({ _parseError:true, fileName:collectedFiles[f].name, meterName:'—', timeStamp:'解析失敗' });
+                continue;
+            }
+            const meterReadings = xmlDoc.getElementsByTagName('MeterReading');
+            for (let i=0; i<meterReadings.length; i++) {
+                const mr = meterReadings[i];
+                const nameNode = mr.getElementsByTagName('name')[0]; if (!nameNode) continue;
+                const meterName10 = nameNode.textContent.trim().substring(0,10);
+                if (mode==='search'   && !searchSet.has(meterName10)) continue;
+                if (mode==='refQuery' && refMeterSet.size && !refMeterSet.has(meterName10)) continue;
+                const tsNode = mr.getElementsByTagName('timeStamp')[0];
+                const timeStamp = tsNode ? tsNode.textContent.trim() : 'N/A';
+
+                if (mode==='search') {
+                    finalData6.push({ fileName:collectedFiles[f].name, meterName:meterName10, timeStamp });
+                } else if (mode==='resetData') {
+                    const REF_DATE  = '11.22.103.0.0.2.122.0.0.0.0.0.0.0.0.0.108.0';
+                    const REF_COUNT = '11.0.0.0.0.2.122.0.0.0.0.0.0.0.0.0.111.0';
+                    const item = { fileName:collectedFiles[f].name, meterName:meterName10, timeStamp, resetDate:'N/A', resetCount:'N/A' };
+                    const blocks = mr.getElementsByTagName('IntervalBlocks');
+                    for (let j=0; j<blocks.length; j++) {
+                        const ref = blocks[j].getElementsByTagName('ReadingType')[0]?.getAttribute('ref');
+                        const val = blocks[j].getElementsByTagName('value')[0]?.textContent||'N/A';
+                        if (ref===REF_DATE)  item.resetDate  = val;
+                        if (ref===REF_COUNT) item.resetCount = val;
+                    }
+                    finalData6.push(item);
+                } else if (mode==='refQuery') {
+                    const allBlocks = mr.getElementsByTagName('IntervalBlocks');
+                    for (let j=0; j<allBlocks.length; j++) {
+                        const rtNode = allBlocks[j].getElementsByTagName('ReadingType')[0]; if (!rtNode) continue;
+                        const ref = rtNode.getAttribute('ref')||'';
+                        if (refSet.size && !refSet.has(ref)) continue;
+                        const rtDef = RT_MAP[ref];
+                        const rtName = rtDef ? `${rtDef.id} ${rtDef.name}` : ref;
+                        const readings = allBlocks[j].getElementsByTagName('IntervalReading');
+                        if (readings.length>0) {
+                            for (let k=0; k<readings.length; k++) {
+                                const val = readings[k].getElementsByTagName('value')[0]?.textContent ?? 'N/A';
+                                const ts  = readings[k].getElementsByTagName('timeStamp')[0]?.textContent || timeStamp;
+                                finalData6.push({ fileName:collectedFiles[f].name, meterName:meterName10, timeStamp:ts, readingType:rtName, readingTypeCode:ref, value:val });
                             }
-                        });
-                    } else {
-                        if (copyFallback(copyString)) {
-                            showCustomAlert(`已複製 ${currentFilteredEntries.length} 筆資料到剪貼簿 (僅電號/表號)`, 'success');
                         } else {
-                            showCustomAlert('複製失敗! 瀏覽器不支持自動複製,請手動複製結果。', 'error'); 
+                            const val = allBlocks[j].getElementsByTagName('value')[0]?.textContent ?? 'N/A';
+                            finalData6.push({ fileName:collectedFiles[f].name, meterName:meterName10, timeStamp, readingType:rtName, readingTypeCode:ref, value:val });
                         }
                     }
-                };
-                
-                resultBody.innerHTML = ''; 
-                
-                if (entriesToDisplay.length === 0) {
-                    resultBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無符合篩選條件的資料</td></tr>';
-                    copyBtn.style.display = 'none';
-                    if (downloadXlsxBtn) downloadXlsxBtn.style.display = 'none'; 
-                    return;
                 }
-                
-                const RENDER_LIMIT = 1000;
-				const entriesToRender = entriesToDisplay.slice(0, RENDER_LIMIT);
-				
-				let currentStatusText = status.textContent.split(' (為防止')[0];
-				if (entriesToDisplay.length > RENDER_LIMIT) {
-					currentStatusText += ` (為防止瀏覽器當機,頁面僅顯示前 ${RENDER_LIMIT} 筆,但 "一鍵複製" 和 "下載 XLSX" 功能會包含所有 ${entriesToDisplay.length} 筆)`;
-				}
-				status.textContent = currentStatusText;
-
-
-				entriesToRender.forEach(entry => {
-					const tr = document.createElement('tr');
-					
-					const tdCustId = document.createElement('td');
-					tdCustId.textContent = entry.cust_id;
-					tr.appendChild(tdCustId);
-
-					const tdMeterId = document.createElement('td');
-					tdMeterId.textContent = entry.meter_id;
-					tr.appendChild(tdMeterId);
-
-					const tdAddress = document.createElement('td');
-					tdAddress.textContent = entry.address;
-					tr.appendChild(tdAddress);
-	
-					const tdHescode = document.createElement('td');
-					tdHescode.textContent = entry.hescode;
-					tr.appendChild(tdHescode);
-					
-                    const tdDemand = document.createElement('td');
-					tdDemand.textContent = entry.demand;
-					tr.appendChild(tdDemand);
-					
-					resultBody.appendChild(tr);
-				});
             }
-			
-			function downloadXLSX(data) {
-				if (typeof XLSX === 'undefined') {
-					showCustomAlert('錯誤:缺少 XLSX 函式庫。請確保您的頁面已載入 xlsx.full.min.js', 'error');
-					return;
-				}
+        }
+        renderTable6(mode);
+    });
 
-				const header = ['Cust ID', 'Meter ID', '地址', 'HES Code', '需量(T/F)'];
+    // ── 模式 1：表號提取 ──
+    async function runExtract() {
+        const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
+        const tempData = [];
+        for (let f=0; f<collectedFiles.length; f++) {
+            stats6.innerText = `提取中… (${f+1}/${collectedFiles.length}) ${collectedFiles[f].name}`;
+            const content = collectedFiles[f].getText();
+            const matches = [...content.matchAll(regex)].map(m=>m[1]);
+            matches.forEach(m => tempData.push([collectedFiles[f].name, m]));
+        }
+        extractCsvData = extractCsvData.concat(tempData);
+        const names = extractCsvData.map(r=>r[1]);
+        const pre = document.getElementById('results-display-xml6');
+        pre.textContent = names.join('\n');
+		Object.assign(pre.style, {
+			display: 'block',      // 強制顯示
+			maxHeight: '200px',    // 限制長度
+			overflowY: 'auto',     // 啟用滾輪
+			visibility: 'visible', // 避免被其他 CSS 隱藏
+			opacity: '1',          // 避免透明度問題
+		});
+        // CSV download
+        const esc = v => { const s=String(v); return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:`${s}`; };
+        let csv='來源路徑,表號\n' + extractCsvData.map(r=>r.map(esc).join(',')).join('\n');
+        const blob = new Blob([new Uint8Array([0xEF,0xBB,0xBF]), csv], {type:'text/csv;charset=utf-8-sig'});
+        const url = URL.createObjectURL(blob);
+        document.getElementById('download-area-xml6').innerHTML=`<a href="${url}" download="表號提取結果.csv">點此下載 CSV（${extractCsvData.length} 筆）</a>`;
+        document.getElementById('download-area-xml6').style.display='flex';
+        document.getElementById('copy-btn-xml6').style.display='inline-block';
+        stats6.innerText = `提取完成：本次新增 ${tempData.length} 筆，累計 ${extractCsvData.length} 筆`;
+        resultTable6.style.display='none'; exportBtn6.style.display='none';
+    }
 
-				const exportData = [header, ...data.map(item => [item.cust_id, item.meter_id, item.address, item.hescode, item.demand])];
+    // ── 模式 5：合規性檢查 ──
+    async function runValidation() {
+        const BARE_AMP  = /&(?!(?:amp|lt|gt|apos|quot|#\d+|#x[\dA-Fa-f]+);)/g;
+        const CTRL_CHAR = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
+        const BARE_LT   = /<(?![\/!?A-Za-z])/g;
+        let allIssues = [], fileSummaries = [];
+        const parser = new DOMParser();
 
-				const ws = XLSX.utils.aoa_to_sheet(exportData);
-				const wb = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(wb, ws, "比對結果");
-				
-				const date = new Date().toISOString().slice(0, 10);
-				XLSX.writeFile(wb, `比對差異結果_${date}.xlsx`);
-                showCustomAlert('XLSX 檔案已開始下載!', 'success');
-			}
+        for (let f=0; f<collectedFiles.length; f++) {
+            stats6.innerText = `掃描中… (${f+1}/${collectedFiles.length}) ${collectedFiles[f].name}`;
+            const raw = collectedFiles[f].getText();
+            const fileName = collectedFiles[f].name;
+            const issues = [];
 
-		})();
+            // DOMParser 試解析
+            const xmlDoc = parser.parseFromString(raw, 'application/xml');
+            const parseErrors = xmlDoc.getElementsByTagName('parsererror');
+            const parseOk = !parseErrors.length;
 
-        // =========================================================================
-        // --- 工具二: XML 表號解析邏輯 ---
-        // =========================================================================
-		(function() {
-			const folderInput = document.getElementById('folder-input-xml');
-			const zipInput = document.getElementById('zip-input-xml');
-			const clearBtn = document.getElementById('clear-btn-xml');
-			const statusElement = document.getElementById('status-xml');
-			const downloadArea = document.getElementById('download-area-xml');
-			const resultsDisplayElement = document.getElementById('results-display-xml');
-			const copyBtn = document.getElementById('copy-btn-xml');
-
-			const dropArea = document.getElementById('drop-area-xml');
-
-			let cumulativeCsvData = [];
-			const regex = /<name>([A-Za-z0-9]{10})<\/name>/g;
-
-			function escapeCsvField(field) {
-				const str = String(field || '');
-				if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-					return `"${str.replace(/"/g, '""')}"`;
-				}
-				return str;
-			}
-
-			function updateUIWithResults() {
-				if (cumulativeCsvData.length > 0) {
-					const displayableResults = cumulativeCsvData.map(row => row[2]);
-					resultsDisplayElement.textContent = displayableResults.join('\n');
-
-					const headers = ['來源 (資料夾/壓縮檔)', '內部路徑/檔名', '表號'];
-					let csvContent = headers.map(escapeCsvField).join(',') + '\n';
-					csvContent += cumulativeCsvData.map(row => row.map(escapeCsvField).join(',')).join('\n');
-					const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8-sig' });
-					const url = URL.createObjectURL(blob);
-
-					downloadArea.innerHTML = `<a href="${url}" download="combined_results.csv">點此下載合併後的 CSV (${cumulativeCsvData.length}筆)</a>`;
-					downloadArea.style.display = 'flex';
-					copyBtn.style.display = 'inline-block';
-					clearBtn.style.display = 'block';
-				} else {
-					resultsDisplayElement.textContent = '等待處理...';
-					downloadArea.style.display = 'none';
-					copyBtn.style.display = 'none';
-					clearBtn.style.display = 'none';
-				}
-			}
-
-			async function processXmlContent(content, sourceName, filePath, tempData) {
-				const matches = Array.from(content.matchAll(regex), match => match[1]);
-				if (matches.length > 0) {
-					matches.forEach(result => {
-						tempData.push([sourceName, filePath, result]);
-					});
-				}
-			}
-
-			async function processZipFile(file, tempData) {
-				const content = await file.arrayBuffer();
-				const zip = await JSZip.loadAsync(content); 
-				const xmlFilePromises = [];
-				zip.forEach((_, zipEntry) => {
-					if (zipEntry.name.toLowerCase().endsWith('.xml') && !zipEntry.dir) {
-						const promise = zipEntry.async("string").then(xmlContent => {
-							return processXmlContent(xmlContent, file.name, zipEntry.name, tempData);
-						});
-						xmlFilePromises.push(promise);
-					}
-				});
-				await Promise.all(xmlFilePromises);
-			}
-
-			async function handleSelection(files) {
-				if (!files || files.length === 0) return;
-				statusElement.style.display = 'block';
-				statusElement.textContent = `開始處理 ${files.length} 個項目...`;
-				const tempData = [];
-				const processingPromises = [];
-				for (const file of files) {
-					if (file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip')) {
-						processingPromises.push(processZipFile(file, tempData));
-					} else if (file.name.toLowerCase().endsWith('.xml')) {
-						const source = file.webkitRelativePath.split('/')[0] || '拖曳上傳'; 
-						const promise = file.text().then(content => {
-							processXmlContent(content, source, file.webkitRelativePath || file.name, tempData);
-						});
-						processingPromises.push(promise);
-					}
-				}
-				await Promise.all(processingPromises);
-				cumulativeCsvData = cumulativeCsvData.concat(tempData);
-				statusElement.textContent = `處理完成!本次新增 ${tempData.length} 筆結果,總共 ${cumulativeCsvData.length} 筆。`;
-				updateUIWithResults();
-			}
-
-			function preventDefaults(e) {
-				e.preventDefault();
-				e.stopPropagation();
-			}
-
-			function handleDrop(e) {
-				const dt = e.dataTransfer;
-				const files = dt.files;
-				
-				handleSelection(files);
-			}
-
-			if (dropArea) {
-				['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-					dropArea.addEventListener(eventName, preventDefaults, false);
-				});
-
-				['dragenter', 'dragover'].forEach(eventName => {
-					dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
-				});
-				['dragleave', 'drop'].forEach(eventName => {
-					dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
-				});
-
-				dropArea.addEventListener('drop', handleDrop, false);
-			}
-
-			folderInput.addEventListener('change', (e) => handleSelection(e.target.files));
-			zipInput.addEventListener('change', (e) => handleSelection(e.target.files));
-
-			clearBtn.addEventListener('click', () => {
-				cumulativeCsvData = [];
-				statusElement.textContent = '結果已清除。';
-				updateUIWithResults();
-			});
-			copyBtn.addEventListener('click', async () => {
-				const originalText = copyBtn.textContent;
-				const textToCopy = resultsDisplayElement.textContent;
-
-				const doFallback = () => {
-					const textarea = document.createElement('textarea');
-					textarea.value = textToCopy;
-					textarea.style.position = 'fixed';
-					textarea.style.top = '0';
-					textarea.style.left = '0';
-					textarea.style.opacity = '0';
-					document.body.appendChild(textarea);
-					let success = false;
-					try {
-						textarea.focus();
-						textarea.select();
-						success = document.execCommand('copy');
-					} catch (e) { console.error('Fallback copy failed:', e); }
-					document.body.removeChild(textarea);
-					return success;
-				};
-
-				const finish = (ok) => {
-					copyBtn.textContent = ok ? '已複製!' : '複製失敗';
-					if (ok) showCustomAlert(`已複製 ${cumulativeCsvData.length} 筆表號`, 'success');
-					setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
-				};
-
-				if (navigator.clipboard && navigator.clipboard.writeText) {
-					try {
-						await navigator.clipboard.writeText(textToCopy);
-						finish(true);
-					} catch (err) {
-						console.warn('Clipboard API 失敗，嘗試 Fallback...', err);
-						finish(doFallback());
-					}
-				} else {
-					finish(doFallback());
-				}
-			});
-		})();
-
-        // =========================================================================
-        // --- 工具三: ZIP 中繼檔解析邏輯 ---
-        // =========================================================================
-        (function() {
-            const zipFileInput = document.getElementById('zipFile-zip');
-            const statusElement = document.getElementById('status-zip');
-            const downloadArea = document.getElementById('download-area-zip');
-            
-            function generateExcelDownloadLink(data, filename) {
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet(data);
-                XLSX.utils.book_append_sheet(wb, ws, "分組結果");
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                const url = URL.createObjectURL(blob);
-                downloadArea.innerHTML = `<a href="${url}" download="${filename}">點此下載 Excel 檔案 (${filename})</a>`;
-                downloadArea.style.display = 'flex';
-            }
-            
-            function handleError(message, error) {
-                statusElement.textContent = message;
-                if (error) console.error("ZIP 工具錯誤:", error);
-            }
-            
-            zipFileInput.addEventListener('change', async (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-                statusElement.style.display = 'block';
-                statusElement.textContent = '正在讀取 ZIP 檔案...';
-                downloadArea.style.display = 'none';
-                try {
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        try {
-                            const content = e.target.result;
-                            const zip = await JSZip.loadAsync(content);
-                            const rawData = [];
-                            const txtFiles = [];
-                            zip.forEach((_, zipEntry) => {
-                                if (zipEntry.name.toLowerCase().endsWith('.txt') && !zipEntry.dir) {
-                                    txtFiles.push(zipEntry);
-                                }
-                            });
-                            if (txtFiles.length === 0) {
-                                throw new Error('在 ZIP 檔案中沒有找到任何 .txt 檔案。');
-                            }
-                            for (const fileEntry of txtFiles) {
-                                statusElement.textContent = `擷取中: ${fileEntry.name}`;
-                                const fileContent = await fileEntry.async("string");
-                                const lines = fileContent.split(/\r?\n/);
-                                for (const line of lines) {
-                                    if (line.length >= 47) {
-                                        const denGo = line.slice(3, 14).trim();
-                                        const hyoGo = (line.slice(36, 38) + line.slice(39, 47)).trim();
-                                        const hyoBetsu = line.slice(14, 16).trim();
-                                        rawData.push({ denGo, hyoGo, hyoBetsu });
-                                    }
-                                }
-                            }
-                            statusElement.textContent = '擷取完成,正在進行分組與彙總...';
-                            const groupedData = new Map();
-                            for (const item of rawData) {
-                                const compositeKey = `${item.denGo}|${item.hyoGo}`;
-                                if (!groupedData.has(compositeKey)) {
-                                    groupedData.set(compositeKey, {
-                                        denGo: item.denGo,
-                                        hyoGo: item.hyoGo,
-                                        hyoBetsuList: new Set()
-                                    });
-                                }
-                                if (item.hyoBetsu) {
-                                    groupedData.get(compositeKey).hyoBetsuList.add(item.hyoBetsu);
-                                }
-                            }
-                            const excelData = [['電號', '表號', '表別']];
-                            let validCount = 0;
-                            for (const group of groupedData.values()) {
-                                const aggregatedHyoBetsu = Array.from(group.hyoBetsuList).join(',');
-                                excelData.push([group.denGo, group.hyoGo, aggregatedHyoBetsu]);
-                                validCount++;
-                            }
-                            if (validCount > 0) {
-                                statusElement.textContent = `處理完成!共產生 ${validCount} 筆分組資料,正在生成 Excel 檔案...`;
-                                generateExcelDownloadLink(excelData, 'grouped_data.xlsx');
-                            } else {
-                                statusElement.textContent = '處理完成,但在所有 .txt 檔案中均未找到符合條件的內容。';
-                            }
-                        } catch (err) {
-                            handleError('處理 ZIP 檔案時發生錯誤,請確認檔案格式是否正確。', err);
-                        }
-                    };
-                    reader.onerror = () => { handleError('讀取檔案失敗!'); };
-                    reader.readAsArrayBuffer(file);
-                } catch (err) { handleError('發生預期外的錯誤。', err); }
+            // 字元掃描
+            raw.split('\n').forEach((line, li) => {
+                const ln = li+1;
+                let m;
+                BARE_AMP.lastIndex=0;
+                while((m=BARE_AMP.exec(line))!==null) issues.push({type:'未跳脫的 & 符號', lineNo:ln, col:m.index+1, snippet:line.trim().substring(0,80)});
+                CTRL_CHAR.lastIndex=0;
+                while((m=CTRL_CHAR.exec(line))!==null) issues.push({type:`控制字元 (\\x${m[0].charCodeAt(0).toString(16).padStart(2,'0')})`, lineNo:ln, col:m.index+1, snippet:line.trim().substring(0,80)});
+                BARE_LT.lastIndex=0;
+                while((m=BARE_LT.exec(line))!==null) issues.push({type:'疑似裸 < 在內容中', lineNo:ln, col:m.index+1, snippet:line.trim().substring(0,80)});
             });
-        })();
-
-        // =========================================================================
-        // --- 工具四: 例外清單處理邏輯 (合併與拆分) ---
-        // =========================================================================
-		(function() {
-			const fileInput = document.getElementById('files-merge-split');
-			const startBtn = document.getElementById('start-merge-split-btn');
-			const fileCountSpan = document.getElementById('file-count-merge-split');
-			const statusDiv = document.getElementById('status-merge-split');
-			const downloadArea = document.getElementById('download-area-merge-split');
-			const specifiedDateInput = document.getElementById('specified-date-merge-split');
-
-			const sectionMap = { "00":"北市區處", "01":"北南區處", "02":"基隆區處", "03":"宜蘭區處", "04":"桃園區處", "05":"北西區處", "06":"新竹區處", "07":"台中區處", "08":"彰化區處", "09":"嘉義區處", "10":"台南區處", "11":"高雄區處", "12":"屏東區處", "13":"花蓮區處", "14":"台東區處", "15":"澎湖區處", "16":"北北區處", "17":"南投區處", "18":"鳳山區處", "19":"雲林區處", "20":"新營區處", "21":"苗栗區處", "22":"金門區處", "23":"馬祖區處" };
-
-			function escapeCsvField(field) {
-				const str = String(field == null ? '' : field);
-				if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-					const escapedStr = str.replace(/"/g, '""');
-					return `"${escapedStr}"`;
-				}
-				return str;
-			}
-			
-			document.querySelectorAll('input[name="date-option-merge-split"]').forEach(radio => {
-				radio.addEventListener('change', (e) => {
-					specifiedDateInput.disabled = e.target.value !== 'specify';
-				});
-			});
-
-			fileInput.addEventListener('change', (e) => {
-				const files = e.target.files;
-				if (files && files.length > 0) {
-					fileCountSpan.textContent = `(${files.length} 個檔案已選擇)`;
-				} else {
-					fileCountSpan.textContent = '';
-				}
-			});
-
-			startBtn.addEventListener('click', async () => {
-				const files = fileInput.files;
-				if (!files || files.length === 0) {
-					showCustomAlert('請先選擇要處理的 Excel 檔案!', 'error');
-					return;
-				}
-				
-				const isSpecifyDate = document.getElementById('date-specify-merge-split').checked;
-				const specifiedDate = specifiedDateInput.value;
-				if (isSpecifyDate && !specifiedDate) {
-					showCustomAlert('若選擇「指定日期」,請務必填寫日期!', 'error');
-					return;
-				}
-
-				statusDiv.style.display = 'block';
-				statusDiv.textContent = `步驟 1/3: 正在讀取 ${files.length} 個檔案...`;
-				downloadArea.style.display = 'none';
-
-				try {
-					let rawDataWithTime = [];
-					const fileReadPromises = Array.from(files).map(file => {
-						const fileModifiedTime = file.lastModified;
-						
-						return new Promise((resolve, reject) => {
-							const reader = new FileReader();
-							reader.onload = (e) => {
-								try {
-									const wb = XLSX.read(e.target.result, { type: 'array' });
-									const ws = wb.Sheets[wb.SheetNames[0]];
-									const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-									if (data.length > 4) {
-										data.slice(4).forEach(row => {
-											rawDataWithTime.push({
-												data: row,
-												lastModified: fileModifiedTime
-											});
-										});
-									}
-									resolve();
-								} catch (err) { reject(err); }
-							};
-							reader.onerror = reject;
-							reader.readAsArrayBuffer(file);
-						});
-					});
-					await Promise.all(fileReadPromises);
-
-					statusDiv.textContent = `步驟 2/3: 正在合併、清洗並去重 ${rawDataWithTime.length} 筆資料...`;
-
-					const today = new Date();
-					const y = today.getFullYear();
-					const m = String(today.getMonth() + 1).padStart(2, '0');
-					const d = String(today.getDate()).padStart(2, '0');
-					const todayStr = `${y}-${m}-${d}`;
-					const billingDate = isSpecifyDate ? specifiedDate : todayStr;
-					
-					const uniqueDataMap = new Map(); 
-
-					rawDataWithTime
-						.filter(item => item.data && item.data[0] && String(item.data[0]).trim() !== '')
-						.forEach(item => {
-							const row = item.data;
-							const lastModified = item.lastModified;
-							
-							const custNo = String(row[0] || '');
-							const meterNo = String(row[1] || '');
-							
-							const finalCustNo = ('00000000000' + custNo).slice(-11);
-							
-							const key = `${finalCustNo}_${meterNo}`;
-
-							const exceptionCode = (row[3] === null || row[3] === undefined || row[3] === '') ? 1 : row[3];
-							
-							const newRow = [
-								finalCustNo, 
-								row[1],
-								row[2],
-								exceptionCode, 
-								row[4],
-								billingDate,
-								lastModified
-							];
-							
-							if (!uniqueDataMap.has(key) || uniqueDataMap.get(key)[6] < lastModified) {
-								uniqueDataMap.set(key, newRow);
-							}
-						});
-
-					let processedData = Array.from(uniqueDataMap.values()).map(row => row.slice(0, 6)); 
-					
-					if (processedData.length === 0) {
-						statusDiv.textContent = '處理完成,但沒有找到有效資料。請確認您的檔案格式 (資料應從第 5 行開始)。';
-						return;
-					}
-
-					const csvHeaders = ["cust_no", "meter_no", "address", "exception_code", "description", "billing_date"];
-					const csvContent = [csvHeaders, ...processedData].map(row => row.map(escapeCsvField).join(",")).join("\n");
-					const csvBlob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8-sig' });
-					const csvUrl = URL.createObjectURL(csvBlob);
-					
-					statusDiv.textContent = `步驟 3/3: 正在根據區處拆分 ${processedData.length} 筆去重後資料...`;
-
-					const dataWithSection = processedData.map(row => {
-						const custNo = String(row[0] || '');
-						const sectionCode = custNo.substring(0, 2);
-						const sectionName = sectionMap[sectionCode] || '未知區處';
-						const newRow = [...row];
-						newRow.push(sectionName);
-						return newRow;
-					});
-					
-					const sections = [...new Set(dataWithSection.map(row => row[6]))];
-					const zip = new JSZip();
-
-					const reportDate = new Date(billingDate);
-					const rocYear = reportDate.getFullYear() - 1911;
-					const month = String(reportDate.getMonth() + 1).padStart(2, '0');
-					const day = String(reportDate.getDate()).padStart(2, '0');
-					const rocDateStr = `${rocYear}.${month}.${day}`;
-					const yyyymmdd = `${reportDate.getFullYear()}${month}${day}`;
-					const excelHeaders = ["電號", "表號", "用電地址", "抄表例外代號", "備註"];
-					
-					sections.forEach(section => {
-						const sectionData = dataWithSection.filter(row => row[6] === section);
-						if (sectionData.length > 0) {
-							const sectionCode = Object.keys(sectionMap).find(key => sectionMap[key] === section) || "XX";
-
-							const header1 = ["低壓AMI抄表例外清單", null, null, null, null];
-							const header2 = [`區處:[${sectionCode}]${section}`, null, null, null, null];
-							const header3 = [`抄表日:${rocDateStr}`, null, null, null, null];
-							const sheetData = [header1, header2, header3, excelHeaders, ...sectionData.map(row => row.slice(0, 5))];
-
-							const wb = XLSX.utils.book_new();
-							const ws = XLSX.utils.aoa_to_sheet(sheetData, { cellDates: false });
-							
-							ws['!merges'] = [
-								{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
-								{ s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
-								{ s: { r: 2, c: 0 }, e: { r: 2, c: 4 } }
-							];
-							
-							ws['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 40 }, { wch: 15 }, { wch: 20 }];
-							
-							if(ws['A1']) ws['A1'].s = { alignment: { horizontal: "center", vertical: "center" } };
-							if(ws['A2']) ws['A2'].s = { alignment: { horizontal: "left", vertical: "center" } };
-							if(ws['A3']) ws['A3'].s = { alignment: { horizontal: "left", vertical: "center" } };
-
-							XLSX.utils.book_append_sheet(wb, ws, "清單");
-							const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-							zip.file(`自動抄表例外清單_${yyyymmdd}_${section}.xlsx`, wbout);
-						}
-					});
-
-					const zipBlob = await zip.generateAsync({ type: "blob" });
-					const zipUrl = URL.createObjectURL(zipBlob);
-
-					statusDiv.textContent = `處理完成!共產生 ${processedData.length} 筆去重後的資料。`;
-					downloadArea.innerHTML = `
-						<a href="${csvUrl}" download="exception.csv" class="download-link-box">下載合併後的 exception.csv</a>
-						<a href="${zipUrl}" download="reports.zip" class="download-link-box">下載拆分的例外清單 (${sections.length} 區處)</a>
-					`;
-					downloadArea.style.display = 'flex';
-
-				} catch (err) {
-					statusDiv.textContent = `處理失敗: ${err.message}`;
-					console.error(err);
-				}
-			});
-		})();
-
-        // =========================================================================
-        // --- 工具五: XML 分割工具邏輯 ---
-        // =========================================================================
-        (function() {
-            const processBtn = document.getElementById('processBtn-split');
-            const fileInput = document.getElementById('fileInput-split');
-            const status = document.getElementById('status-split');
-
-            // 格式化 XML 函數：維持階層及換行關係
-            function formatXML(node, indent = 0) {
-                const indentStr = '  '.repeat(indent);
-                let result = '';
-
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    const tagName = node.nodeName;
-                    const attributes = Array.from(node.attributes || [])
-                        .map(attr => ` ${attr.name}="${attr.value}"`)
-                        .join('');
-                    
-                    const children = Array.from(node.childNodes);
-                    const hasElementChildren = children.some(child => child.nodeType === Node.ELEMENT_NODE);
-                    const textContent = children
-                        .filter(child => child.nodeType === Node.TEXT_NODE)
-                        .map(child => child.nodeValue.trim())
-                        .filter(text => text.length > 0)
-                        .join('');
-
-                    if (children.length === 0) {
-                        result = `${indentStr}<${tagName}${attributes}/>\n`;
-                    } else if (!hasElementChildren && textContent) {
-                        result = `${indentStr}<${tagName}${attributes}>${textContent}</${tagName}>\n`;
-                    } else {
-                        result = `${indentStr}<${tagName}${attributes}>\n`;
-                        children.forEach(child => {
-                            if (child.nodeType === Node.ELEMENT_NODE) {
-                                result += formatXML(child, indent + 1);
-                            }
-                        });
-                        result += `${indentStr}</${tagName}>\n`;
-                    }
-                }
-
-                return result;
+            const emptyNames = [...raw.matchAll(/<name\s*><\/name>|<name\s*\/>/g)];
+            if (emptyNames.length) issues.push({type:`空的 <name> 節點 (${emptyNames.length} 處)`, lineNo:'—', col:'—', snippet:'空表號可能導致比對失敗'});
+            const declCount = [...raw.matchAll(/<\?xml/g)].length;
+            if (declCount>1) issues.push({type:`重複的 <?xml 宣告 (${declCount} 個)`, lineNo:'—', col:'—', snippet:'XML 只允許一個宣告'});
+            if (!parseOk) {
+                const errText = parseErrors[0]?.textContent.replace(/\n/g,' ').substring(0,120)||'未知錯誤';
+                issues.push({type:'DOMParser 直接解析失敗', lineNo:'—', col:'—', snippet:errText});
             }
 
-            processBtn.addEventListener('click', async () => {
-                const files = fileInput.files;
-                const batchSize = parseInt(document.getElementById('batchSize-split').value);
-                
-                if (!files.length) {
-                    showCustomAlert('請選擇檔案', 'error');
-                    return;
-                }
-
-                processBtn.disabled = true;
-                status.style.display = 'block';
-                status.className = 'status';
-                status.innerText = '正在處理中,請稍候...';
-
-                const zip = new JSZip();
-                const parser = new DOMParser();
-
-                try {
-                    for (let f = 0; f < files.length; f++) {
-                        const file = files[f];
-                        const text = await file.text();
-                        const xmlDoc = parser.parseFromString(text, "application/xml");
-
-                        if (xmlDoc.getElementsByTagName("parsererror").length) {
-                            console.error(`檔案 ${file.name} 解析失敗`);
-                            continue;
-                        }
-
-                        const root = xmlDoc.documentElement;
-                        const rootNamespace = root.namespaceURI;
-                        const rootAttributes = Array.from(root.attributes || []);
-                        
-                        const headerNode = root.getElementsByTagName("Header")[0];
-                        const meterReadingNodes = Array.from(xmlDoc.getElementsByTagName("MeterReading"));
-                        const meterReadingsContainer = xmlDoc.getElementsByTagName("MeterReadings")[0];
-                        const mrNamespace = meterReadingsContainer ? meterReadingsContainer.getAttribute("xmlns") : "http://iec.ch/TC57/2011/MeterReadings#";
-
-                        let partIndex = 1;
-                        for (let i = 0; i < meterReadingNodes.length; i += batchSize) {
-                            const batch = meterReadingNodes.slice(i, i + batchSize);
-                            
-                            const newDoc = document.implementation.createDocument(rootNamespace, root.nodeName, null);
-                            const newRoot = newDoc.documentElement;
-
-                            rootAttributes.forEach(attr => {
-                                newRoot.setAttribute(attr.name, attr.value);
-                            });
-
-                            if (headerNode) {
-                                newRoot.appendChild(newDoc.importNode(headerNode, true));
+            // ReadingType 規則驗證（需 DOMParser 成功）
+            if (parseOk) {
+                const meterReadings = xmlDoc.getElementsByTagName('MeterReading');
+                for (let i=0; i<meterReadings.length; i++) {
+                    const mr = meterReadings[i];
+                    const nameNode = mr.getElementsByTagName('name')[0];
+                    const meterName = nameNode ? nameNode.textContent.trim().substring(0,10) : '(未知)';
+                    const allBlocks = mr.getElementsByTagName('IntervalBlocks');
+                    for (let j=0; j<allBlocks.length; j++) {
+                        const rtNode = allBlocks[j].getElementsByTagName('ReadingType')[0]; if (!rtNode) continue;
+                        const ref = rtNode.getAttribute('ref')||'';
+                        const rtDef = RT_MAP[ref]; if (!rtDef) continue; // 未知 ref 不驗
+                        const valueNodes = allBlocks[j].getElementsByTagName('value');
+                        for (let k=0; k<valueNodes.length; k++) {
+                            const val = valueNodes[k].textContent;
+                            const result = validateValue(rtDef.rule, val);
+                            if (!result.ok) {
+                                issues.push({
+                                    type: `ReadingType 規則違反: ${rtDef.id} ${rtDef.name}`,
+                                    lineNo: `表號 ${meterName}`,
+                                    col: `ref: ${ref}`,
+                                    snippet: result.msg
+                                });
                             }
-
-                            const newPayload = newDoc.createElementNS(rootNamespace, "Payload");
-                            const newMRs = newDoc.createElementNS(mrNamespace, "MeterReadings");
-                            newMRs.setAttribute("xmlns", mrNamespace);
-
-                            batch.forEach(node => {
-                                newMRs.appendChild(newDoc.importNode(node, true));
-                            });
-
-                            newPayload.appendChild(newMRs);
-                            newRoot.appendChild(newPayload);
-
-                            const formattedXML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + formatXML(newRoot);
-                            
-                            const fileName = `${file.name.replace('.xml', '')}_${partIndex}.xml`;
-                            zip.file(fileName, formattedXML);
-                            partIndex++;
                         }
                     }
-
-                    status.innerText = '正在產生 ZIP 壓縮檔...';
-                    
-                    const content = await zip.generateAsync({type: "blob"});
-                    const url = URL.createObjectURL(content);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `split_xml_${new Date().getTime()}.zip`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-
-                    status.innerText = '處理完成!ZIP 檔已開始下載。';
-                    showCustomAlert('XML 分割完成!ZIP 檔已開始下載', 'success');
-
-                } catch (err) {
-                    status.innerText = '處理發生錯誤:' + err.message;
-                    showCustomAlert('處理發生錯誤: ' + err.message, 'error');
-                } finally {
-                    processBtn.disabled = false;
                 }
+            }
+
+            fileSummaries.push({ fileName, parseOk, issueCount: issues.length });
+            issues.forEach(iss => allIssues.push({ fileName, ...iss }));
+        }
+
+        finalData6 = allIssues;
+        if (!allIssues.length) {
+            stats6.innerText='✅ 掃描完成：所有檔案均無發現不合規問題。';
+            stats6.style.background='#e8f5e9'; stats6.style.borderLeftColor='#43a047';
+            showCustomAlert('✅ 所有檔案合規！','success'); return;
+        }
+        stats6.innerText=`⚠️ 掃描完成：共發現 ${allIssues.length} 個問題`;
+        stats6.style.background='#fff3e0'; stats6.style.borderLeftColor='#fb8c00';
+
+        let summaryHtml='<strong>各檔案摘要：</strong><ul style="margin:8px 0 0;padding-left:20px;">';
+        fileSummaries.forEach(s => {
+            const badge = s.parseOk ? (s.issueCount ? `<span class="badge-warn">⚠️ ${s.issueCount} 個警告</span>` : '<span class="badge-ok">✅ 正常</span>') : `<span class="badge-err">❌ 解析失敗 + ${s.issueCount} 個問題</span>`;
+            summaryHtml+=`<li style="margin-bottom:4px;">${escHtml(s.fileName)} ${badge}</li>`;
+        });
+        summaryHtml+='</ul>';
+        validationSummary6.innerHTML=summaryHtml; validationSummary6.style.display='block';
+		validationSummary6.style.maxHeight = '200px'; // 限制高度，例如 200px
+		validationSummary6.style.overflowY = 'auto';  // 超過高度時自動顯示垂直滾輪
+		validationSummary6.style.border = '1px solid #eee'; // 選配：加個邊框讓範圍更明顯
+		validationSummary6.style.padding = '8px';           // 選配：內距增加閱讀舒適度
+
+        const cols=[{id:'fileName',label:'來源檔名'},{id:'type',label:'問題類型'},{id:'lineNo',label:'行號/位置'},{id:'col',label:'欄號/說明'},{id:'snippet',label:'內容片段'}];
+        tableHeaderRow6.innerHTML='<th>#</th>'+cols.map(c=>`<th onclick="sortTable6('${c.id}','validate')" id="th6-${c.id}">${c.label}</th>`).join('');
+        resultBody6.innerHTML=allIssues.map((iss,idx)=>`<tr class="err-row"><td>${idx+1}</td><td>${escHtml(iss.fileName)}</td><td><span class="badge-err">${escHtml(iss.type)}</span></td><td>${escHtml(String(iss.lineNo))}</td><td>${escHtml(String(iss.col))}</td><td style="font-family:monospace;font-size:12px;">${escHtml(String(iss.snippet))}</td></tr>`).join('');
+        resultTable6.style.display='table'; exportBtn6.style.display='block'; exportBtn6._mode='validate';
+    }
+
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // ── 渲染表格（模式 2/3/4）──
+    function renderTable6(mode) {
+        const label = { search:'符合的表號', resetData:'復歸資料', refQuery:'ReadingType 值' }[mode]||'';
+        if (!finalData6.length) { stats6.innerText=`未找到${label}資料`; return; }
+        stats6.style.background='#e8f0fe'; stats6.style.borderLeftColor='#1a73e8';
+        let cols=[{id:'fileName',label:'來源檔名'},{id:'meterName',label:'10碼表號'},{id:'timeStamp',label:'TimeStamp'}];
+        if (mode==='resetData') { cols.push({id:'resetDate',label:'前次復歸日期'}); cols.push({id:'resetCount',label:'需量復歸次數'}); }
+        if (mode==='refQuery')  { cols.push({id:'readingType',label:'名稱'}); cols.push({id:'readingTypeCode',label:'ReadingType ref'}); cols.push({id:'value',label:'Value'}); }
+        tableHeaderRow6.innerHTML='<th>#</th>'+cols.map(c=>`<th onclick="sortTable6('${c.id}','${mode}')" id="th6-${c.id}">${c.label}</th>`).join('');
+        updateTableBody6(mode);
+        resultTable6.style.display='table'; exportBtn6.style.display='block'; exportBtn6._mode=mode;
+        stats6.innerText=`解析完成：共 ${finalData6.length} 筆`;
+    }
+
+    function updateTableBody6(mode) {
+        resultBody6.innerHTML=finalData6.map((item,idx)=>{
+            const err=item._parseError?' class="err-row"':'';
+            let tds=`<td>${idx+1}</td><td>${escHtml(item.fileName)}</td><td class="highlight-meter">${escHtml(item.meterName||'')}</td><td>${escHtml(item.timeStamp||'')}</td>`;
+            if (mode==='resetData') tds+=`<td class="highlight-val">${escHtml(item.resetDate||'')}</td><td class="highlight-val">${escHtml(item.resetCount||'')}</td>`;
+            if (mode==='refQuery')  tds+=`<td>${escHtml(item.readingType||'')}</td><td style="font-family:monospace;font-size:12px;">${escHtml(item.readingTypeCode||'')}</td><td class="highlight-val">${escHtml(item.value||'')}</td>`;
+            return `<tr${err}>${tds}</tr>`;
+        }).join('');
+    }
+
+    window.sortTable6 = function(column, mode) {
+        if (currentSort6.column===column) currentSort6.asc=!currentSort6.asc;
+        else { currentSort6.column=column; currentSort6.asc=true; }
+        finalData6.sort((a,b)=>{ const va=String(a[column]??''), vb=String(b[column]??''); return currentSort6.asc?va.localeCompare(vb,undefined,{numeric:true}):vb.localeCompare(va,undefined,{numeric:true}); });
+        document.querySelectorAll('#resultTable-6 th').forEach(th=>th.className='');
+        const active=document.getElementById(`th6-${column}`); if(active) active.className=currentSort6.asc?'sort-asc':'sort-desc';
+        if (mode==='validate') {
+            resultBody6.innerHTML=finalData6.map((iss,idx)=>`<tr class="err-row"><td>${idx+1}</td><td>${escHtml(iss.fileName)}</td><td><span class="badge-err">${escHtml(iss.type)}</span></td><td>${escHtml(String(iss.lineNo))}</td><td>${escHtml(String(iss.col))}</td><td style="font-family:monospace;font-size:12px;">${escHtml(String(iss.snippet))}</td></tr>`).join('');
+        } else updateTableBody6(mode);
+    };
+
+    // ── 匯出 CSV ──
+    exportBtn6.addEventListener('click', () => {
+        const mode = exportBtn6._mode || currentMode6;
+        let headers, rows;
+        if (mode==='validate') {
+            headers=['序號','來源檔名','問題類型','行號/位置','欄號/說明','內容片段'];
+            rows=finalData6.map((d,i)=>[i+1,d.fileName,d.type,d.lineNo,d.col,d.snippet]);
+        } else if (mode==='resetData') {
+            headers=['序號','來源檔名','10碼表號','TimeStamp','前次復歸日期','需量復歸次數'];
+            rows=finalData6.map((d,i)=>[i+1,d.fileName,d.meterName,d.timeStamp,d.resetDate,d.resetCount]);
+        } else if (mode==='refQuery') {
+            headers=['序號','來源檔名','10碼表號','TimeStamp','名稱','ReadingType ref','Value'];
+            rows=finalData6.map((d,i)=>[i+1,d.fileName,d.meterName,d.timeStamp,d.readingType,d.readingTypeCode,d.value]);
+        } else {
+            headers=['序號','來源檔名','10碼表號','TimeStamp'];
+            rows=finalData6.map((d,i)=>[i+1,d.fileName,d.meterName,d.timeStamp]);
+        }
+        const esc=v=>{const s=String(v??'');return(s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:`${s}`;};
+        let csv='\ufeff'+headers.map(esc).join(',')+'\n';
+        rows.forEach(r=>{csv+=r.map(esc).join(',')+'\n';});
+        const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+        const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download=`XML解析結果_${Date.now()}.csv`; link.click();
+        showCustomAlert('CSV 已開始下載！','success');
+    });
+})();
+
+// =========================================================================
+// 工具三: ZIP 中繼檔解析
+// =========================================================================
+(function() {
+    const zipFileInput = document.getElementById('zipFile-zip');
+    const statusElement = document.getElementById('status-zip');
+    const downloadArea = document.getElementById('download-area-zip');
+    function generateExcelDownloadLink(data, filename) {
+        const wb=XLSX.utils.book_new(); const ws=XLSX.utils.aoa_to_sheet(data); XLSX.utils.book_append_sheet(wb,ws,'分組結果');
+        const url=URL.createObjectURL(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+        downloadArea.innerHTML=`<a href="${url}" download="${filename}">點此下載 Excel 檔案 (${filename})</a>`; downloadArea.style.display='flex';
+    }
+    zipFileInput.addEventListener('change', async event => {
+        const file=event.target.files[0]; if(!file) return;
+        statusElement.style.display='block'; statusElement.textContent='正在讀取 ZIP 檔案...'; downloadArea.style.display='none';
+        try {
+            const reader=new FileReader();
+            reader.onload=async e=>{
+                try {
+                    const zip=await JSZip.loadAsync(e.target.result); const rawData=[]; const txtFiles=[];
+                    zip.forEach((_,ze)=>{ if(ze.name.toLowerCase().endsWith('.txt')&&!ze.dir) txtFiles.push(ze); });
+                    if(!txtFiles.length) throw new Error('ZIP 中沒有 .txt 檔案');
+                    for(const fe of txtFiles) {
+                        statusElement.textContent=`擷取中: ${fe.name}`;
+                        const lines=(await fe.async('string')).split(/\r?\n/);
+                        lines.forEach(line=>{ if(line.length>=47) rawData.push({denGo:line.slice(3,14).trim(), hyoGo:(line.slice(36,38)+line.slice(39,47)).trim(), hyoBetsu:line.slice(14,16).trim()}); });
+                    }
+                    statusElement.textContent='擷取完成，正在分組...';
+                    const grouped=new Map();
+                    rawData.forEach(item=>{ const k=`${item.denGo}|${item.hyoGo}`; if(!grouped.has(k)) grouped.set(k,{denGo:item.denGo,hyoGo:item.hyoGo,hyoBetsuList:new Set()}); if(item.hyoBetsu) grouped.get(k).hyoBetsuList.add(item.hyoBetsu); });
+                    const excelData=[['電號','表號','表別']];
+                    grouped.forEach(g=>excelData.push([g.denGo,g.hyoGo,Array.from(g.hyoBetsuList).join(',')]));
+                    if(excelData.length>1) { statusElement.textContent=`處理完成！共 ${excelData.length-1} 筆`; generateExcelDownloadLink(excelData,'grouped_data.xlsx'); }
+                    else statusElement.textContent='沒有找到符合的內容。';
+                } catch(err) { statusElement.textContent='處理出錯: '+err.message; }
+            };
+            reader.readAsArrayBuffer(file);
+        } catch(err) { statusElement.textContent='發生錯誤: '+err.message; }
+    });
+})();
+
+// =========================================================================
+// 工具四: 例外清單處理
+// =========================================================================
+(function() {
+    const fileInput=document.getElementById('files-merge-split');
+    const startBtn=document.getElementById('start-merge-split-btn');
+    const fileCountSpan=document.getElementById('file-count-merge-split');
+    const statusDiv=document.getElementById('status-merge-split');
+    const downloadArea=document.getElementById('download-area-merge-split');
+    const specifiedDateInput=document.getElementById('specified-date-merge-split');
+    const sectionMap={"00":"北市區處","01":"北南區處","02":"基隆區處","03":"宜蘭區處","04":"桃園區處","05":"北西區處","06":"新竹區處","07":"台中區處","08":"彰化區處","09":"嘉義區處","10":"台南區處","11":"高雄區處","12":"屏東區處","13":"花蓮區處","14":"台東區處","15":"澎湖區處","16":"北北區處","17":"南投區處","18":"鳳山區處","19":"雲林區處","20":"新營區處","21":"苗栗區處","22":"金門區處","23":"馬祖區處"};
+    const esc=f=>{const s=String(f??'');return(s.includes(',')||s.includes('"')||s.includes('\n')||s.includes('\r'))?`"${s.replace(/"/g,'""')}"`:`${s}`;};
+    document.querySelectorAll('input[name="date-option-merge-split"]').forEach(r=>r.addEventListener('change',e=>{ specifiedDateInput.disabled=e.target.value!=='specify'; }));
+    fileInput.addEventListener('change',e=>{ fileCountSpan.textContent=(e.target.files?.length>0)?`(${e.target.files.length} 個檔案)`:''; });
+    startBtn.addEventListener('click', async()=>{
+        const files=fileInput.files; if(!files?.length){showCustomAlert('請先選擇 Excel 檔案！','error');return;}
+        const isSpecify=document.getElementById('date-specify-merge-split').checked;
+        const specDate=specifiedDateInput.value;
+        if(isSpecify&&!specDate){showCustomAlert('請填寫指定日期！','error');return;}
+        statusDiv.style.display='block'; statusDiv.textContent=`步驟 1/3: 讀取 ${files.length} 個檔案...`; downloadArea.style.display='none';
+        try {
+            let rawWithTime=[];
+            await Promise.all(Array.from(files).map(file=>new Promise((res,rej)=>{
+                const r=new FileReader();
+                r.onload=e=>{ try{ const wb=XLSX.read(e.target.result,{type:'array'}); const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}); if(data.length>4) data.slice(4).forEach(row=>rawWithTime.push({data:row,lastModified:file.lastModified})); res(); }catch(err){rej(err);} };
+                r.onerror=rej; r.readAsArrayBuffer(file);
+            })));
+            statusDiv.textContent=`步驟 2/3: 合併去重 ${rawWithTime.length} 筆...`;
+            const today=new Date(); const billingDate=isSpecify?specDate:`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const uMap=new Map();
+            rawWithTime.filter(item=>item.data&&item.data[0]&&String(item.data[0]).trim()).forEach(item=>{
+                const row=item.data; const custNo=('00000000000'+String(row[0]||'')).slice(-11); const key=`${custNo}_${row[1]||''}`;
+                const newRow=[custNo,row[1],row[2],(row[3]===''||row[3]==null)?1:row[3],row[4],billingDate,item.lastModified];
+                if(!uMap.has(key)||uMap.get(key)[6]<item.lastModified) uMap.set(key,newRow);
             });
-        })();
-    </script>
+            let processed=Array.from(uMap.values()).map(r=>r.slice(0,6));
+            if(!processed.length){statusDiv.textContent='沒有找到有效資料（資料應從第5行開始）';return;}
+            const csvContent=[['cust_no','meter_no','address','exception_code','description','billing_date'],...processed].map(r=>r.map(esc).join(',')).join('\n');
+            const csvUrl=URL.createObjectURL(new Blob([new Uint8Array([0xEF,0xBB,0xBF]),csvContent],{type:'text/csv;charset=utf-8-sig'}));
+            statusDiv.textContent=`步驟 3/3: 拆分 ${processed.length} 筆...`;
+            const withSec=processed.map(row=>{const sc=String(row[0]||'').substring(0,2);return[...row,sectionMap[sc]||'未知區處'];});
+            const sections=[...new Set(withSec.map(r=>r[6]))]; const zip=new JSZip();
+            const rd=new Date(billingDate); const rYear=rd.getFullYear()-1911; const mo=String(rd.getMonth()+1).padStart(2,'0'); const dy=String(rd.getDate()).padStart(2,'0');
+            sections.forEach(sec=>{
+                const sData=withSec.filter(r=>r[6]===sec); if(!sData.length) return;
+                const sc=Object.keys(sectionMap).find(k=>sectionMap[k]===sec)||'XX';
+                const sheetData=[['低壓AMI抄表例外清單',null,null,null,null],[`區處:[${sc}]${sec}`,null,null,null,null],[`抄表日:${rYear}.${mo}.${dy}`,null,null,null,null],['電號','表號','用電地址','抄表例外代號','備註'],...sData.map(r=>r.slice(0,5))];
+                const wb2=XLSX.utils.book_new(); const ws2=XLSX.utils.aoa_to_sheet(sheetData,{cellDates:false});
+                ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}},{s:{r:1,c:0},e:{r:1,c:4}},{s:{r:2,c:0},e:{r:2,c:4}}];
+                ws2['!cols']=[{wch:15},{wch:15},{wch:40},{wch:15},{wch:20}];
+                XLSX.utils.book_append_sheet(wb2,ws2,'清單');
+                zip.file(`自動抄表例外清單_${rd.getFullYear()}${mo}${dy}_${sec}.xlsx`,XLSX.write(wb2,{bookType:'xlsx',type:'array'}));
+            });
+            const zipUrl=URL.createObjectURL(await zip.generateAsync({type:'blob'}));
+            statusDiv.textContent=`處理完成！共 ${processed.length} 筆去重資料。`;
+            downloadArea.innerHTML=`<a href="${csvUrl}" download="exception.csv" class="download-link-box">下載合併後的 exception.csv</a><a href="${zipUrl}" download="reports.zip" class="download-link-box">下載拆分例外清單 (${sections.length} 區處)</a>`;
+            downloadArea.style.display='flex';
+        } catch(err){statusDiv.textContent=`處理失敗: ${err.message}`;console.error(err);}
+    });
+})();
+
+// =========================================================================
+// 工具五: XML 分割工具
+// =========================================================================
+(function() {
+    const processBtn=document.getElementById('processBtn-split');
+    const fileInput=document.getElementById('fileInput-split');
+    const status=document.getElementById('status-split');
+    function formatXML(node,indent=0) {
+        const ind='  '.repeat(indent); let result='';
+        if(node.nodeType===Node.ELEMENT_NODE){
+            const tag=node.nodeName; const attrs=Array.from(node.attributes||[]).map(a=>` ${a.name}="${a.value}"`).join('');
+            const children=Array.from(node.childNodes); const hasEl=children.some(c=>c.nodeType===Node.ELEMENT_NODE);
+            const text=children.filter(c=>c.nodeType===Node.TEXT_NODE).map(c=>c.nodeValue.trim()).filter(t=>t).join('');
+            if(!children.length) result=`${ind}<${tag}${attrs}/>\n`;
+            else if(!hasEl&&text) result=`${ind}<${tag}${attrs}>${text}</${tag}>\n`;
+            else { result=`${ind}<${tag}${attrs}>\n`; children.forEach(c=>{ if(c.nodeType===Node.ELEMENT_NODE) result+=formatXML(c,indent+1); }); result+=`${ind}</${tag}>\n`; }
+        }
+        return result;
+    }
+    processBtn.addEventListener('click', async()=>{
+        const files=fileInput.files; const batchSize=parseInt(document.getElementById('batchSize-split').value);
+        if(!files.length){showCustomAlert('請選擇檔案','error');return;}
+        processBtn.disabled=true; status.style.display='block'; status.className='status'; status.innerText='正在處理中...';
+        const zip=new JSZip(); const parser=new DOMParser();
+        try {
+            for(let f=0;f<files.length;f++){
+                const file=files[f]; const text=await file.text();
+                const xmlDoc=parser.parseFromString(text,'application/xml');
+                if(xmlDoc.getElementsByTagName('parsererror').length){console.error(`${file.name} 解析失敗`);continue;}
+                const root=xmlDoc.documentElement; const rootNS=root.namespaceURI; const rootAttrs=Array.from(root.attributes||[]);
+                const headerNode=root.getElementsByTagName('Header')[0];
+                const mrNodes=Array.from(xmlDoc.getElementsByTagName('MeterReading'));
+                const mrsContainer=xmlDoc.getElementsByTagName('MeterReadings')[0];
+                const mrNS=mrsContainer?mrsContainer.getAttribute('xmlns'):'http://iec.ch/TC57/2011/MeterReadings#';
+                let partIdx=1;
+                for(let i=0;i<mrNodes.length;i+=batchSize){
+                    const batch=mrNodes.slice(i,i+batchSize);
+                    const newDoc=document.implementation.createDocument(rootNS,root.nodeName,null);
+                    const newRoot=newDoc.documentElement;
+                    rootAttrs.forEach(a=>newRoot.setAttribute(a.name,a.value));
+                    if(headerNode) newRoot.appendChild(newDoc.importNode(headerNode,true));
+                    const newPayload=newDoc.createElementNS(rootNS,'Payload');
+                    const newMRs=newDoc.createElementNS(mrNS,'MeterReadings'); newMRs.setAttribute('xmlns',mrNS);
+                    batch.forEach(n=>newMRs.appendChild(newDoc.importNode(n,true)));
+                    newPayload.appendChild(newMRs); newRoot.appendChild(newPayload);
+                    zip.file(`${file.name.replace('.xml','')}_${partIdx}.xml`,'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+formatXML(newRoot));
+                    partIdx++;
+                }
+            }
+            status.innerText='正在產生 ZIP...';
+            const content=await zip.generateAsync({type:'blob'}); const url=URL.createObjectURL(content);
+            const a=document.createElement('a'); a.href=url; a.download=`split_xml_${Date.now()}.zip`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            status.innerText='處理完成！ZIP 已開始下載。'; showCustomAlert('XML 分割完成！','success');
+        } catch(err){status.innerText='錯誤: '+err.message;showCustomAlert('錯誤: '+err.message,'error');}
+        finally{processBtn.disabled=false;}
+    });
+})();
+</script>
 </body>
 </html>
