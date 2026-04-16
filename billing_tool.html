@@ -265,10 +265,20 @@ h2 { margin: 0; padding: 0; border: none; }
     <!-- 工具四：例外清單處理 -->
     <div id="tool-merge-split" class="tab-content">
       <div class="warning"><strong>功能：</strong>一次性將多個例外清單合併整理為 CSV，並根據區處拆分。</div>
-      <p>請選擇多個來源 <code>.xlsx</code> 檔案，工具會自動完成合併、拆分並產生兩個下載連結。</p>
-      <label for="files-merge-split" class="action-label">選擇多個 Excel (.xlsx) 檔案</label>
-      <input type="file" id="files-merge-split" multiple accept=".xlsx" style="display:none;">
-      <span id="file-count-merge-split" style="margin-left:10px;font-size:20px;color:#ed4242;"></span>
+      <p>① 請選擇多個來源 <code>.xlsx</code> 檔案，工具會自動完成合併、拆分並產生兩個下載連結。</p>
+	  <p>② 比對失敗清單，檢查是否有漏提供的例外，並展示於頁面下方。</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:4px;">
+        <div style="flex:1;min-width:220px;">
+          <label for="files-merge-split" class="action-label" style="margin-bottom:4px;">① 選擇多個 Excel (.xlsx) 例外清單</label>
+          <input type="file" id="files-merge-split" multiple accept=".xlsx" style="display:none;">
+          <span id="file-count-merge-split" style="font-size:14px;color:#ed4242;display:block;text-align:center;"></span>
+        </div>
+        <div style="flex:1;min-width:220px;">
+          <label for="csv-compare-merge" class="action-label" style="margin-bottom:4px;background:#34a853;">② 選擇比對用 CSV（可選可不選）</label>
+          <input type="file" id="csv-compare-merge" accept=".csv,.tsv,.txt" style="display:none;">
+          <span id="csv-compare-merge-name" style="font-size:14px;color:#1a6b2f;display:block;text-align:center;"></span>
+        </div>
+      </div>
       <div class="options-group">
         <p>報表日期選項：</p>
         <input type="radio" id="date-today-merge-split" name="date-option-merge-split" value="today" checked>
@@ -280,6 +290,30 @@ h2 { margin: 0; padding: 0; border: none; }
       <button id="start-merge-split-btn">開始處理並下載檔案</button>
       <div id="status-merge-split" class="status"></div>
       <div id="download-area-merge-split" class="download-links-container" style="display:none;"></div>
+
+      <!-- 比對差異結果區 -->
+      <div id="diff-section-merge" style="display:none;margin-top:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #eee;padding-bottom:10px;margin-bottom:12px;">
+          <h3 style="margin:0;color:#c62828;">比較結果（CSV 中存在，但例外清單沒有電號／表號）</h3>
+          <div style="display:flex;gap:8px;">
+            <button id="copy-btn-merge-diff">一鍵複製</button>
+            <button id="dl-xlsx-merge-diff" style="background:#34a853;">下載 XLSX</button>
+          </div>
+        </div>
+        <div id="diff-count-merge" style="font-weight:bold;color:#007bff;margin-bottom:8px;"></div>
+        <div style="max-height:400px;overflow-y:auto;border:1px solid #eee;border-radius:5px;">
+          <table id="diff-table-merge" style="width:100%;border-collapse:collapse;">
+            <thead><tr style="background:#f2f2f2;position:sticky;top:0;">
+              <th style="border:1px solid #ddd;padding:10px;">cust_id</th>
+              <th style="border:1px solid #ddd;padding:10px;">meter_id</th>
+              <th style="border:1px solid #ddd;padding:10px;">地址</th>
+              <th style="border:1px solid #ddd;padding:10px;">Hescode</th>
+              <th style="border:1px solid #ddd;padding:10px;">需量(T/F)</th>
+            </tr></thead>
+            <tbody id="diff-body-merge"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- 工具五：XML 分割工具 -->
@@ -1153,11 +1187,52 @@ document.addEventListener('DOMContentLoaded', () => {
 // =========================================================================
 (function () {
   const fileInput     = document.getElementById('files-merge-split');
+  const csvInput      = document.getElementById('csv-compare-merge');
   const startBtn      = document.getElementById('start-merge-split-btn');
   const fileCountSpan = document.getElementById('file-count-merge-split');
+  const csvNameSpan   = document.getElementById('csv-compare-merge-name');
   const statusDiv     = document.getElementById('status-merge-split');
   const dlArea        = document.getElementById('download-area-merge-split');
   const specDateInput = document.getElementById('specified-date-merge-split');
+
+  // CSV 欄位對應（與工具一相同）
+  const CSV_FIELD_MAP = {
+    meter_id: ['meter_id', '表號'],
+    cust_id:  ['cust_id', '電號'],
+    address:  ['address', '地址', '用電地址'],
+    hescode:  ['hescode'],
+    demand:   ['demand', '需量', '需量(t/f)', '需量(T/F)'],
+  };
+
+  csvInput.addEventListener('change', e => {
+    csvNameSpan.textContent = e.target.files?.[0]?.name || '';
+  });
+
+  function parseCompareCsv(file) {
+    return new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        delimiter: '', skipEmptyLines: true, encoding: 'UTF-8', header: true,
+        transformHeader: h => String(h).trim().toLowerCase(),
+        complete: ({ meta, data }) => {
+          const headers = meta.fields || [];
+          const col = {};
+          for (const [field, aliases] of Object.entries(CSV_FIELD_MAP)) {
+            const found = aliases.find(a => headers.includes(a.toLowerCase()));
+            if (found) col[field] = found.toLowerCase();
+          }
+          if (!col.meter_id) return reject(new Error('比對 CSV 內找不到表號欄位'));
+          resolve(data.map(row => ({
+            cust_id:  row[col.cust_id]  || '',
+            meter_id: String(row[col.meter_id] || '').trim().toUpperCase(),
+            address:  row[col.address]  || '',
+            hescode:  row[col.hescode]  || '',
+            demand:   String(row[col.demand] || '').trim().toUpperCase(),
+          })).filter(r => r.meter_id));
+        },
+        error: reject,
+      });
+    });
+  }
 
   // 區處代碼對照表
   const SECTION_MAP = {
@@ -1256,11 +1331,74 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const zipUrl = URL.createObjectURL(await zip.generateAsync({ type: 'blob' }));
-      statusDiv.textContent = `處理完成！共 ${processed.length} 筆去重資料。`;
       dlArea.innerHTML =
         `<a href="${csvUrl}" download="exception.csv" class="download-link-box">下載合併後的 exception.csv</a>` +
         `<a href="${zipUrl}" download="reports.zip" class="download-link-box">下載拆分例外清單 (${sections.length} 區處)</a>`;
       dlArea.style.display = 'flex';
+
+      // ── CSV 比對（選填）──
+      const diffSection = document.getElementById('diff-section-merge');
+      diffSection.style.display = 'none';
+      if (csvInput.files?.[0]) {
+        statusDiv.textContent = '正在執行 CSV 比對…';
+        const csvRows = await parseCompareCsv(csvInput.files[0]);
+        // 合併後的 key 集合（電號_表號，表號補齊10碼大寫）
+        const mergedKeys = new Set(
+          processed.map(r => `${String(r[0]).trim()}_${String(r[1] || '').trim().toUpperCase()}`)
+        );
+        const missing = csvRows.filter(r => {
+          const custPadded = ('00000000000' + r.cust_id).slice(-11);
+          const key = `${custPadded}_${r.meter_id}`;
+          return !mergedKeys.has(key);
+        });
+
+        const diffBody  = document.getElementById('diff-body-merge');
+        const diffCount = document.getElementById('diff-count-merge');
+        diffBody.innerHTML = '';
+        if (!missing.length) {
+          diffCount.textContent = '✅ 比對完成：CSV 所有電號／表號均已包含在例外清單中。';
+          diffCount.style.color = '#2e7d32';
+        } else {
+          diffCount.textContent = `共 ${missing.length} 筆存在於 CSV，但不在合併後的例外清單中。`;
+          diffCount.style.color = '#c62828';
+          const LIMIT = 1000;
+          missing.slice(0, LIMIT).forEach(r => {
+            const tr = document.createElement('tr');
+            ['cust_id','meter_id','address','hescode','demand'].forEach(k => {
+              const td = document.createElement('td');
+              td.textContent = r[k];
+              td.style.cssText = 'border:1px solid #ddd;padding:8px;';
+              tr.appendChild(td);
+            });
+            diffBody.appendChild(tr);
+          });
+          if (missing.length > LIMIT) diffCount.textContent += `（頁面僅顯示前 ${LIMIT} 筆）`;
+
+          // 複製按鈕
+          const copyBtn = document.getElementById('copy-btn-merge-diff');
+          copyBtn.onclick = async () => {
+            const text = missing.map(r => `${r.cust_id}	${r.meter_id}`).join('\n');
+            const ok = await copyText(text);
+            showCustomAlert(ok ? `已複製 ${missing.length} 筆` : '複製失敗', ok ? 'success' : 'error');
+          };
+
+          // 下載 XLSX 按鈕
+          document.getElementById('dl-xlsx-merge-diff').onclick = () => {
+            const ws = XLSX.utils.aoa_to_sheet([
+              ['Cust ID','Meter ID','地址','HES Code','需量(T/F)'],
+              ...missing.map(r => [r.cust_id, r.meter_id, r.address, r.hescode, r.demand]),
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '差異清單');
+            XLSX.writeFile(wb, `例外清單差異_${new Date().toISOString().slice(0,10)}.xlsx`);
+            showCustomAlert('XLSX 已下載！', 'success');
+          };
+        }
+        diffSection.style.display = 'block';
+        statusDiv.textContent = `處理完成！合併 ${processed.length} 筆，CSV 比對差異 ${missing.length} 筆。`;
+      } else {
+        statusDiv.textContent = `處理完成！共 ${processed.length} 筆去重資料。`;
+      }
     } catch (err) { statusDiv.textContent = `處理失敗：${err.message}`; console.error(err); }
   });
 })();
