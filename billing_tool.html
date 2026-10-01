@@ -134,6 +134,10 @@ h2 { margin: 0; padding: 0; border: none; }
 #drop-area-xml6 p { margin: 0; color: #777; font-size: 14px; }
 .file-input-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .button { display: inline-block; background: #007bff; color: #fff; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; }
+#tool-reading iframe {
+  display: block; width: 100%; border: 0; border-radius: 6px;
+  height: calc(100vh - 190px); min-height: 720px; background: #F6F3EC;
+}
 </style>
 <script src="jszip.min.js"></script>
 <script src="papaparse.min.js"></script>
@@ -148,6 +152,7 @@ h2 { margin: 0; padding: 0; border: none; }
     <button class="tab-link" data-tab="tool-zip">ZIP 中繼檔解析</button>
     <button class="tab-link" data-tab="tool-merge-split">例外清單處理</button>
     <button class="tab-link" data-tab="tool-xml-split">XML 分割工具</button>
+	<button class="tab-link" data-tab="tool-reading">日程表</button>
   </div>
 
   <div class="content-container">
@@ -330,6 +335,11 @@ h2 { margin: 0; padding: 0; border: none; }
       <button id="processBtn-split">開始處理並下載 ZIP</button>
       <div id="status-split" class="status" style="display:none;"></div>
     </div>
+	
+	<!-- 工具六：抄表日程表整理器（內嵌） -->
+    <div id="tool-reading" class="tab-content">
+      <iframe id="frame-reading" data-src="Reading_Cycle_Organizer.html" title="抄表日程表整理器"></iframe>
+    </div>
 
   </div>
 </div>
@@ -380,6 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById(target).classList.add('active');
+	  const f = document.getElementById(target).querySelector('iframe[data-src]');
+	  if (f && !f.getAttribute('src')) f.src = f.dataset.src;
     });
   });
 });
