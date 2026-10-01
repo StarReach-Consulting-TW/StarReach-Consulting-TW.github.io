@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>抄表日程表整理器</title>
-<script src="xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --paper:#F6F3EC;
@@ -127,24 +127,93 @@
   .dl-btn .t{font-size:14.5px; font-weight:600;}
   .dl-btn .d{font-size:12px; color:#C9BFA0; line-height:1.4;}
 
-  /* preview table */
-  .preview-wrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:8px; background:#fff;}
-  table.preview{ border-collapse:collapse; width:100%; font-size:12.5px; font-family:var(--mono);}
-  table.preview th, table.preview td{
-    border-bottom:1px solid var(--rule); border-right:1px solid #EDE7D6;
-    padding:7px 10px; white-space:nowrap; text-align:center;
+  /* calendar view */
+  :root{
+    --read:#FFE27A; --read-edge:#D9A900; --read-ink:#5A4300;
+    --off:#F8CBD6;  --off-ink:#A63D57;
   }
-  table.preview th{ background:var(--paper-2); color:var(--steel); font-weight:600; position:sticky; top:0;}
-  table.preview td.dayseq{ background:var(--paper-2); font-weight:600; color:var(--ink);}
-  table.preview tr:nth-child(17n) td{ border-bottom:2px solid var(--rule); }
-  .hint{ font-size:12px; color:var(--ink-soft); margin-top:8px; }
+  .cal-tools{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;
+    margin-bottom:14px; font-size:12.5px;
+  }
+  .cal-tools .legend{ display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; }
+  .cal-tools .lg{ display:inline-flex; align-items:center; gap:6px; color:var(--ink-soft); }
+  .sw{ width:18px; height:18px; border-radius:4px; border:1px solid var(--rule); display:inline-block; position:relative; }
+  .sw.read{ background:var(--read); border-color:var(--read-edge); }
+  .sw.off{ background:var(--off); }
+  .sw.both{ background:var(--read); border-color:var(--read-edge); }
+  .sw.both::after{ content:''; position:absolute; top:0; right:0; border-style:solid; border-width:0 8px 8px 0; border-color:transparent var(--off-ink) transparent transparent; }
+  .cal-btns{ margin-left:auto; display:flex; gap:8px; }
+  .mini-btn{
+    font-family:var(--sans); font-size:12px; color:var(--steel); background:#fff;
+    border:1px solid var(--rule); border-radius:6px; padding:5px 10px; cursor:pointer;
+  }
+  .mini-btn:hover{ border-color:var(--amber); color:var(--amber-deep); }
+  .cal-note{ font-size:12px; color:var(--ink-soft); margin:0 0 14px; line-height:1.6; }
+  .cal-note b{ color:var(--ink); }
+  .cal-note .warn{ color:var(--bad); }
 
+  .cal-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .month{ background:#fff; border:1px solid var(--rule); border-radius:8px; padding:12px 12px 10px; }
+  .month h3{ margin:0 0 8px; font-size:14px; font-family:var(--mono); letter-spacing:.04em; display:flex; justify-content:space-between; align-items:baseline; }
+  .month h3 small{ font-size:11px; color:var(--ink-soft); font-weight:400; }
+  .dow, .days{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .dow span{ text-align:center; font-size:11px; color:var(--ink-soft); padding-bottom:2px; }
+  .dow span:first-child, .dow span:last-child{ color:var(--off-ink); }
+  .day{
+    min-height:36px; border-radius:4px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-family:var(--mono); font-size:12.5px;
+    position:relative; line-height:1.15; border:1px solid transparent;
+  }
+  .day.empty{ visibility:hidden; }
+  .day .sq{ font-size:9.5px; color:var(--read-ink); opacity:.85; }
+  .day.hd{ background:var(--off); color:var(--off-ink); }
+  /* 抄表日放在後面：與假日重疊時，黃底優先 */
+  .day.rd{ background:var(--read); border-color:var(--read-edge); color:var(--ink); font-weight:700; }
+  .day.rd.hd::after{ content:''; position:absolute; top:0; right:0; border-style:solid; border-width:0 8px 8px 0; border-color:transparent var(--off-ink) transparent transparent; border-top-right-radius:3px; }
+  .hint{ font-size:12px; color:var(--ink-soft); margin-top:12px; }
+  
   footer{ margin-top:50px; text-align:center; font-size:11.5px; color:var(--ink-soft); }
   a.reset{ color:var(--steel); cursor:pointer; text-decoration:underline; }
 
   @media (max-width:640px){
     .summary-row{grid-template-columns:1fr 1fr;}
     header{flex-direction:column; align-items:flex-start;}
+  }
+
+  /* ---- 列印 / 匯出 PDF ---- */
+  .print-head{ display:none; }
+  @media print{
+    @page{ size:A4 landscape; margin:0; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    html,body{ background:#fff !important; }
+    body{ padding:8mm 10mm !important; min-height:0 !important; }
+    .wrap{ max-width:none !important; }
+    /* 隱藏操作介面，只留標題＋年曆 */
+    header, .drop, #status, footer, .summary-row, .downloads,
+    h2.section, .cal-btns, .hint{ display:none !important; }
+    .results{ display:block !important; margin-top:0 !important; }
+
+    .print-head{ display:flex !important; justify-content:space-between; align-items:flex-end;
+      border-bottom:1.2px solid var(--ink); padding-bottom:2mm; margin-bottom:2.5mm; }
+    .print-head h1{ font-size:17px; margin:0; letter-spacing:.02em; }
+    .print-head p{ margin:0; font-size:9.5px; color:var(--ink-soft); text-align:right; line-height:1.5; }
+
+    .cal-tools{ margin:0 0 2mm; }
+    .cal-tools .lg{ font-size:9.5px; }
+    .sw{ width:12px; height:12px; }
+    .sw.both::after{ border-width:0 6px 6px 0; }
+    .cal-note{ font-size:9px; margin:0 0 2.5mm; line-height:1.4; }
+
+    .cal-grid{ grid-template-columns:repeat(var(--pcols,4),1fr); gap:3mm; }
+    .month{ padding:2mm 2mm 1.5mm; border-radius:3px; break-inside:avoid; page-break-inside:avoid; }
+    .month h3{ font-size:10.5px; margin:0 0 1.2mm; }
+    .month h3 small{ font-size:8px; }
+    .dow, .days{ gap:1px; }
+    .dow span{ font-size:8px; padding-bottom:.5mm; }
+    .day{ min-height:6.3mm; font-size:9px; border-radius:2px; }
+    .day .sq{ font-size:6.5px; }
+    .day.rd.hd::after{ border-width:0 5px 5px 0; }
   }
 </style>
 </head>
@@ -202,11 +271,24 @@
       </button>
     </div>
 
-    <h2 class="section">完整日程表預覽</h2>
-    <div class="preview-wrap">
-      <table class="preview" id="previewTable"></table>
+    <h2 class="section">年度抄表日曆</h2>
+    <div class="print-head" id="printHead"><h1 id="phTitle"></h1><p id="phMeta"></p></div>
+    <div class="cal-tools">
+      <div class="legend">
+        <span class="lg"><i class="sw read"></i>抄表日（數字為日序）</span>
+        <span class="lg"><i class="sw off"></i>例假日／國定假日</span>
+        <span class="lg"><i class="sw both"></i>抄表日遇假日</span>
+      </div>
+      <div class="cal-btns">
+        <button class="mini-btn" id="calPdf" type="button" style="background:var(--ink);color:#F3E7C9;border-color:var(--ink);">匯出 PDF</button>
+        <button class="mini-btn" id="calOnline" type="button">線上更新假日</button>
+        <button class="mini-btn" id="calImportBtn" type="button">匯入日曆檔</button>
+        <input type="file" id="calImport" accept=".csv,.json,.ics,.txt" multiple style="display:none;">
+      </div>
     </div>
-    <p class="hint">橫向捲動可查看十二月。日序列固定於左側。</p>
+    <p class="cal-note" id="calStatus"></p>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="hint">滑鼠移到日期上可看抄表月別、日序、開票日與假日名稱。</p>
   </div>
 
   <footer>
@@ -435,26 +517,248 @@ function setDial(year){
   dial.style.visibility = 'visible';
 }
 
-function renderPreview(monthData){
-  const table = document.getElementById('previewTable');
-  let head1 = '<tr><th rowspan="2">日序</th>';
-  MONTH_NAMES.forEach(mn => { head1 += `<th colspan="2">${mn}</th>`; });
-  head1 += '</tr>';
-  let head2 = '<tr>';
-  MONTH_NAMES.forEach(() => { head2 += '<th>抄表日</th><th>開票日</th>'; });
-  head2 += '</tr>';
-  let html = `<thead>${head1}${head2}</thead><tbody>`;
-  for(let seq=1; seq<=17; seq++){
-    html += `<tr><td class="dayseq">${pad2(seq)}日序</td>`;
-    MONTH_NAMES.forEach(mn => {
-      const e = monthData[mn].find(x=>x.dayseq===seq);
-      html += `<td>${isoDate(e.read)}</td><td>${isoDate(e.bill)}</td>`;
-    });
-    html += '</tr>';
+// ---------- 辦公日曆（人事行政總處）----------
+// 內建 115(2026)、116(2027) 年；其他年度會嘗試線上取得，也可匯入人事總處下載的 CSV / ICS / JSON。
+const BUILTIN_CAL = {"2026":{"hol":{"20260101":"開國紀念日","20260215":"小年夜","20260216":"農曆除夕","20260217":"春節","20260218":"春節","20260219":"春節","20260220":"補假","20260227":"補假","20260228":"和平紀念日","20260403":"補假","20260404":"兒童節","20260405":"清明節","20260406":"補假","20260501":"勞動節","20260619":"端午節","20260925":"中秋節","20260928":"孔子誕辰紀念日/教師節","20261009":"補假","20261010":"國慶日","20261025":"臺灣光復暨金門古寧頭大捷紀念日","20261026":"補假","20261225":"行憲紀念日"},"work":[]},"2027":{"hol":{"20270101":"開國紀念日","20270204":"小年夜","20270205":"農曆除夕","20270206":"春節","20270207":"春節","20270208":"春節","20270209":"補假","20270210":"補假","20270228":"和平紀念日","20270301":"補假","20270404":"兒童節","20270405":"清明節","20270406":"補假","20270430":"補假","20270501":"勞動節","20270609":"端午節","20270915":"中秋節","20270928":"孔子誕辰紀念日/教師節","20271010":"國慶日","20271011":"補假","20271025":"臺灣光復暨金門古寧頭大捷紀念日","20271224":"補假","20271225":"行憲紀念日","20271231":"補假"},"work":[]}};
+const HOL  = new Map();   // 'YYYYMMDD' -> 放假名稱（平日放假，或有名稱的週末假日）
+const WORK = new Set();   // 'YYYYMMDD' -> 週六日補行上班
+const CAL_SRC = {};       // 年 -> 來源（內建／線上／匯入）
+
+function dKey(y,m,d){ return `${y}${pad2(m)}${pad2(d)}`; }
+
+function addDay(key, isHol, name, src){
+  const y = +key.slice(0,4), m = +key.slice(4,6), d = +key.slice(6,8);
+  const dow = new Date(y, m-1, d).getDay();
+  const weekend = (dow === 0 || dow === 6);
+  if(isHol){
+    WORK.delete(key);
+    if(name || !weekend) HOL.set(key, name || '');
+  }else{
+    HOL.delete(key);
+    if(weekend) WORK.add(key);
   }
-  html += '</tbody>';
-  table.innerHTML = html;
+  CAL_SRC[y] = src;
 }
+
+function clearYear(y){
+  const p = String(y);
+  [...HOL.keys()].forEach(k => { if(k.startsWith(p)) HOL.delete(k); });
+  [...WORK].forEach(k => { if(k.startsWith(p)) WORK.delete(k); });
+  delete CAL_SRC[y];
+}
+
+Object.entries(BUILTIN_CAL).forEach(([y, v]) => {
+  Object.entries(v.hol).forEach(([k, n]) => addDay(k, true, n, '內建'));
+  v.work.forEach(k => addDay(k, false, '', '內建'));
+  CAL_SRC[y] = '內建';
+});
+
+// 單日判定：補班 > 放假 > 週六日
+function dayInfo(y,m,d){
+  const key = dKey(y,m,d);
+  if(WORK.has(key)) return { off:false, name:'週末補行上班' };
+  if(HOL.has(key))  return { off:true,  name:HOL.get(key) || '放假' };
+  const dow = new Date(y, m-1, d).getDay();
+  if(dow === 0) return { off:true, name:'星期日' };
+  if(dow === 6) return { off:true, name:'星期六' };
+  return { off:false, name:'' };
+}
+
+function normDateKey(s){
+  s = String(s || '').trim().replace(/^"|"$/g, '');
+  let m = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  if(m) return m[1] + pad2(m[2]) + pad2(m[3]);
+  s = s.replace(/\D/g, '');
+  return s.length === 8 ? s : null;
+}
+
+// 解析 JSON（TaiwanCalendar 格式）／ CSV（人事總處：西元日期,星期,是否放假,備註）／ ICS
+function parseHolidayText(text, src){
+  const t = text.replace(/^\uFEFF/, '');
+  const trimmed = t.trim();
+  let n = 0;
+
+  if(trimmed.startsWith('[') || trimmed.startsWith('{')){
+    let arr = JSON.parse(trimmed);
+    if(!Array.isArray(arr)) arr = arr.data || [];
+    arr.forEach(o => {
+      const key = normDateKey(o.date ?? o['西元日期']);
+      if(!key) return;
+      const flag = o.isHoliday ?? o['是否放假'];
+      const isHol = flag === true || String(flag).toLowerCase() === 'true' || String(flag) === '2' || String(flag) === '1';
+      addDay(key, isHol, String(o.description ?? o['備註'] ?? '').trim(), src);
+      n++;
+    });
+  }else if(/BEGIN:VCALENDAR/i.test(t)){
+    const unfolded = t.replace(/\r?\n[ \t]/g, '');
+    (unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || []).forEach(ev => {
+      const s = ev.match(/DTSTART[^:\r\n]*:(\d{8})/);
+      if(!s) return;
+      const e = ev.match(/DTEND[^:\r\n]*:(\d{8})/);
+      const name = (ev.match(/SUMMARY[^:\r\n]*:(.*)/) || [,''])[1].trim();
+      const isWork = /補行上班|補班/.test(name);
+      const k0 = s[1];
+      const start = new Date(+k0.slice(0,4), +k0.slice(4,6)-1, +k0.slice(6,8));
+      let end = new Date(start); end.setDate(end.getDate() + 1);
+      if(e) end = new Date(+e[1].slice(0,4), +e[1].slice(4,6)-1, +e[1].slice(6,8));
+      for(let c = new Date(start); c < end; c.setDate(c.getDate() + 1)){
+        addDay(dKey(c.getFullYear(), c.getMonth()+1, c.getDate()), !isWork, isWork ? '' : name, src);
+        n++;
+      }
+    });
+  }else{
+    t.split(/\r?\n/).forEach(line => {
+      if(!line.trim()) return;
+      const p = line.split(',');
+      const key = normDateKey(p[0]);
+      if(!key) return;                       // 標題列或雜訊
+      const flag = String(p[2] || '').trim().replace(/^"|"$/g, '');
+      const isHol = flag === '2' || flag === '1' || /^(true|是|放假)$/i.test(flag);
+      addDay(key, isHol, p.slice(3).join(',').trim().replace(/^"|"$/g, ''), src);
+      n++;
+    });
+  }
+  if(!n) throw new Error('檔案內找不到可辨識的日期資料');
+  return n;
+}
+
+async function readTextSmart(file){
+  const buf = await file.arrayBuffer();
+  let s = new TextDecoder('utf-8').decode(buf);
+  if(s.includes('\uFFFD')){ try{ s = new TextDecoder('big5').decode(buf); }catch(e){} }
+  return s;
+}
+
+async function fetchYear(y){
+  const res = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y}.json`, { cache:'no-cache' });
+  if(!res.ok) throw new Error(`${y} 年資料取得失敗 (HTTP ${res.status})`);
+  const text = await res.text();
+  JSON.parse(text);               // 先驗證格式，成功才清掉舊資料
+  clearYear(y);
+  parseHolidayText(text, '線上');
+}
+
+function neededYears(){
+  if(!currentData) return [];
+  let lo = 9999, hi = 0;
+  MONTH_NAMES.forEach(mn => currentData.monthData[mn].forEach(e => {
+    lo = Math.min(lo, e.read.y); hi = Math.max(hi, e.read.y);
+  }));
+  const ys = []; for(let y = lo; y <= hi; y++) ys.push(y);
+  return ys;
+}
+
+let calBusy = false;
+async function ensureHolidayData(force){
+  if(!currentData || calBusy) return;
+  const todo = neededYears().filter(y => force || !CAL_SRC[y]);
+  if(!todo.length){ renderCalendar(); return; }
+  calBusy = true;
+  document.getElementById('calStatus').textContent = `正在取得 ${todo.join('、')} 年辦公日曆…`;
+  const fails = [];
+  for(const y of todo){
+    try{ await fetchYear(y); }catch(e){ console.warn(e); fails.push(y); }
+  }
+  calBusy = false;
+  renderCalendar(fails);
+}
+
+// ---------- 年曆渲染 ----------
+function renderCalendar(fetchFails){
+  if(!currentData) return;
+  const readMap = new Map();
+  let minYM = Infinity, maxYM = -Infinity;
+
+  MONTH_NAMES.forEach(mn => currentData.monthData[mn].forEach(e => {
+    const k = dKey(e.read.y, e.read.m, e.read.d);
+    if(!readMap.has(k)) readMap.set(k, []);
+    readMap.get(k).push({ mn, seq:e.dayseq, bill:isoDate(e.bill) });
+    const ym = e.read.y * 12 + (e.read.m - 1);
+    if(ym < minYM) minYM = ym;
+    if(ym > maxYM) maxYM = ym;
+  }));
+
+  const WD = ['日','一','二','三','四','五','六'];
+  const overlap = [];
+  let html = '';
+
+  for(let ym = minYM; ym <= maxYM; ym++){
+    const y = Math.floor(ym / 12), m = (ym % 12) + 1;
+    const firstDow = new Date(y, m-1, 1).getDay();
+    const dim = new Date(y, m, 0).getDate();
+    let readCnt = 0, cells = '';
+
+    for(let i = 0; i < firstDow; i++) cells += '<div class="day empty"></div>';
+    for(let d = 1; d <= dim; d++){
+      const k = dKey(y, m, d);
+      const info = dayInfo(y, m, d);
+      const reads = readMap.get(k);
+      const cls = ['day'];
+      if(info.off) cls.push('hd');
+      let inner = `<span>${d}</span>`;
+      const tip = [`${y}-${pad2(m)}-${pad2(d)}`];
+
+      if(reads){
+        cls.push('rd'); readCnt++;
+        const seqs = [...new Set(reads.map(r => pad2(r.seq)))].join('/');
+        inner += `<span class="sq">${seqs}</span>`;
+        tip.push('抄表日：' + reads.map(r => `${r.mn} ${pad2(r.seq)}日序（開票日 ${r.bill}）`).join('；'));
+        if(info.off){ overlap.push(`${m}/${d}`); }
+      }
+      if(info.off) tip.push('假日：' + info.name);
+      else if(info.name) tip.push(info.name);
+
+      cells += `<div class="${cls.join(' ')}" title="${tip.join('\n')}">${inner}</div>`;
+    }
+
+    html += `<div class="month"><h3><span>${y} 年 ${m} 月</span><small>${readCnt ? '抄表日 ' + readCnt + ' 天' : ''}</small></h3>`
+          + `<div class="dow">${WD.map(w => `<span>${w}</span>`).join('')}</div>`
+          + `<div class="days">${cells}</div></div>`;
+  }
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = html;
+  grid.style.setProperty('--pcols', (maxYM - minYM + 1) > 12 ? 5 : 4);   // 超過 12 個月時改 5 欄，仍可排進一頁
+
+  document.getElementById('phTitle').textContent =
+    `抄表日程表　民國 ${currentData.rocYear} 年（西元 ${currentData.baseYear}）`;
+  const nowD = new Date();
+  document.getElementById('phMeta').innerHTML =
+    `來源檔案：${(fileNameEl.textContent || '—').replace(/</g, '&lt;')}<br>列印日期：${nowD.getFullYear()}-${pad2(nowD.getMonth()+1)}-${pad2(nowD.getDate())}`;
+
+  // 狀態列：資料來源、缺資料年度、抄表日遇假日
+  const years = neededYears();
+  const have = years.filter(y => CAL_SRC[y]);
+  const miss = years.filter(y => !CAL_SRC[y]);
+  const parts = [];
+  if(have.length) parts.push(`假日資料：${have.map(y => `${y}（${CAL_SRC[y]}）`).join('、')}`);
+  if(miss.length) parts.push(`<span class="warn">${miss.join('、')} 年尚無辦公日曆，暫以週六日標示粉色；可按「線上更新假日」或匯入日曆檔。</span>`);
+  if(fetchFails && fetchFails.length) parts.push(`<span class="warn">線上取得失敗：${fetchFails.join('、')}（請檢查網路，或改用匯入）。</span>`);
+  parts.push(overlap.length ? `抄表日落在假日：<b>${overlap.length}</b> 天（${overlap.slice(0, 10).join('、')}${overlap.length > 10 ? '…' : ''}）` : '抄表日皆未落在假日');
+  const el = document.getElementById('calStatus');
+  el.innerHTML = parts.join('　｜　');
+}
+
+document.getElementById('calPdf').addEventListener('click', () => {
+  if(!currentData) return;
+  if(calBusy){ showStatus('假日資料仍在載入，請稍候再匯出。', 'err'); return; }
+  window.focus();
+  window.print();      // 列印視窗的「目的地」選「另存為 PDF」
+});
+document.getElementById('calOnline').addEventListener('click', () => ensureHolidayData(true));
+document.getElementById('calImportBtn').addEventListener('click', () => document.getElementById('calImport').click());
+document.getElementById('calImport').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  const msgs = [];
+  for(const f of files){
+    try{
+      const n = parseHolidayText(await readTextSmart(f), '匯入');
+      msgs.push(`${f.name}：${n} 筆`);
+    }catch(err){ msgs.push(`${f.name}：${err.message}`); }
+  }
+  e.target.value = '';
+  renderCalendar();
+  if(msgs.length) showStatus('日曆匯入結果 — ' + msgs.join('；'), msgs.some(m => /找不到|失敗/.test(m)) ? 'err' : 'ok');
+});
 
 function handleFile(file){
   if(!file) return;
@@ -478,7 +782,8 @@ function handleFile(file){
       const first = parsed.monthData['一月'][0];
       document.getElementById('firstDate').textContent = isoDate(first.read);
       setDial(parsed.baseYear);
-      renderPreview(parsed.monthData);
+      renderCalendar();
+      ensureHolidayData(false);
 
       showStatus(`已成功解析「${sheetName}」工作表，年度換算為西元 ${parsed.baseYear} 年。`, 'ok');
       resultsEl.classList.add('show');
