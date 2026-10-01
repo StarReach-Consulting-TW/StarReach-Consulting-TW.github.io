@@ -224,7 +224,7 @@
     <div class="title-block">
       <p class="eyebrow">Meter&nbsp;Reading&nbsp;Cycle&nbsp;Organizer</p>
       <h1>抄表日程表整理器</h1>
-      <p class="sub">上傳原始抄表輪期 .xls 檔，自動換算全年 12 個抄表月份、17 個日序的抄表日與開票日，並產出 3 種下載格式。</p>
+      <p class="sub">上傳原始抄表輪期 .xls 檔或 .dat 檔，自動換算全年 12 個抄表月份、17 個日序的抄表日與開票日，並產出 3 種下載格式。</p>
     </div>
     <div class="dial" id="yearDial" style="visibility:hidden;">
       <div class="digits" id="digits"></div>
@@ -236,10 +236,10 @@
     <span class="icon">XLS</span>
     <span class="txt">
       <b>選取或拖曳抄表輪期檔案</b>
-      <span>支援 .xls／.xlsx，例如 NBY812_116.xls</span>
+      <span>支援 .xls／.xlsx／.dat，例如 NBY812_116.xls、AMI_SCHED_116.dat</span>
       <div class="filename" id="fileName"></div>
     </span>
-    <input type="file" id="fileInput" accept=".xls,.xlsx">
+    <input type="file" id="fileInput" accept=".xls,.xlsx,.dat,.txt">
   </label>
 
   <div class="status" id="status"></div>
@@ -267,7 +267,7 @@
       <button class="dl-btn" id="dl3">
         <span class="n">載點 03</span>
         <span class="t">billing_schedule.csv</span>
-        <span class="d">抄表周期表 csv 檔，匯入資料庫用</span>
+        <span class="d">抄表周期表 csv 檔，用於匯入資料庫</span>
       </button>
     </div>
 
@@ -760,6 +760,88 @@ document.getElementById('calImport').addEventListener('change', async (e) => {
   if(msgs.length) showStatus('日曆匯入結果 — ' + msgs.join('；'), msgs.some(m => /找不到|失敗/.test(m)) ? 'err' : 'ok');
 });
 
+// ---------- .dat 解析（每行 36 碼固定長度）----------
+// [0:5] 抄表年月  [5:6] 類型(1=低壓續日,2=低壓段日,3=高壓)  [6:8] 計算日  [8:10] 日序
+// [10:18] 抄表日  [18:26] 開票日  [26:34] 收費日  [34:36] 流水號　　→ 只取類型 1
+function parseDat(text){
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+  const recs = [];
+  let bad = 0, otherType = 0;
+
+  const toDt = (s, ctx) => {
+    const y = +s.slice(0,4), m = +s.slice(4,6), d = +s.slice(6,8);
+    const t = new Date(y, m-1, d);
+    if(t.getFullYear() !== y || t.getMonth() !== m-1 || t.getDate() !== d)
+      throw new Error(`日期不合法：${s}（${ctx}）`);
+    return { y, m, d };
+  };
+
+  lines.forEach(raw => {
+    const l = raw.trim();
+    if(!l) return;
+    if(!/^\d{36}/.test(l)){ bad++; return; }
+    if(l.slice(5,6) !== '1'){ otherType++; return; }
+    recs.push({
+      roc: parseInt(l.slice(0,3), 10),
+      mon: parseInt(l.slice(3,5), 10),
+      seq: parseInt(l.slice(8,10), 10),
+      read: l.slice(10,18),
+      bill: l.slice(18,26)
+    });
+  });
+  if(!recs.length) throw new Error('找不到類型 1（低壓續日）的資料，請確認檔案格式（每行 36 碼）。');
+
+  // 民國年度：取出現最多的年度，其餘年度略過
+  const cnt = {};
+  recs.forEach(r => cnt[r.roc] = (cnt[r.roc] || 0) + 1);
+  const rocYear = +Object.keys(cnt).sort((p, q) => cnt[q] - cnt[p])[0];
+  const baseYear = rocYear + 1911;
+  const use = recs.filter(r => r.roc === rocYear);
+  const otherYear = recs.length - use.length;
+
+  const monthData = {};
+  for(let mi = 0; mi < 12; mi++){
+    const mname = MONTH_NAMES[mi];
+    const rows = use.filter(r => r.mon === mi + 1);
+    if(!rows.length) throw new Error(`缺少 ${mname}（${rocYear}${pad2(mi+1)}）的類型 1 資料。`);
+    const bySeq = {};
+    rows.forEach(r => {
+      if(bySeq[r.seq]) throw new Error(`${mname} 日序${pad2(r.seq)} 重複出現。`);
+      bySeq[r.seq] = r;
+    });
+    const entries = [];
+    for(let s = 1; s <= 16; s++){
+      const r = bySeq[s];
+      if(!r) throw new Error(`${mname} 缺少日序${pad2(s)}（類型 1 每月應有 16 筆）。`);
+      const ctx = `${mname} 日序${pad2(s)}`;
+      entries.push({ dayseq:s, read:toDt(r.read, ctx), bill:toDt(r.bill, ctx) });
+    }
+    // 日序 17：與 Excel 解析相同的固定規則
+    // 抄表日 = 日序16 所在實際月份的 1 日；開票日 = 日序12 的開票日
+    const d16 = entries[15], d12 = entries[11];
+    entries.push({
+      dayseq: 17,
+      read: { y:d16.read.y, m:d16.read.m, d:1 },
+      bill: { y:d12.bill.y, m:d12.bill.m, d:d12.bill.d }
+    });
+    monthData[mname] = entries;
+  }
+  return { rocYear, baseYear, monthData, meta:{ count:use.length, otherType, otherYear, bad } };
+}
+
+function applyParsed(parsed, okMsg){
+  currentData = parsed;
+  document.getElementById('rocYear').textContent = parsed.rocYear;
+  document.getElementById('baseYear').textContent = parsed.baseYear;
+  const first = parsed.monthData['一月'][0];
+  document.getElementById('firstDate').textContent = isoDate(first.read);
+  setDial(parsed.baseYear);
+  renderCalendar();
+  ensureHolidayData(false);
+  showStatus(okMsg, 'ok');
+  resultsEl.classList.add('show');
+}
+
 function handleFile(file){
   if(!file) return;
   fileNameEl.textContent = file.name;
@@ -767,33 +849,34 @@ function handleFile(file){
   resultsEl.classList.remove('show');
   dial.style.visibility = 'hidden';
 
+  const isDat = /\.(dat|txt)$/i.test(file.name);
   const reader = new FileReader();
   reader.onload = (evt) => {
     try{
-      const data = new Uint8Array(evt.target.result);
-      const wb = XLSX.read(data, { type:'array', codepage: 950, cellText:false, cellDates:false });
-      const sheetName = wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const parsed = parseWorkbook(ws);
-      currentData = parsed;
-
-      document.getElementById('rocYear').textContent = parsed.rocYear;
-      document.getElementById('baseYear').textContent = parsed.baseYear;
-      const first = parsed.monthData['一月'][0];
-      document.getElementById('firstDate').textContent = isoDate(first.read);
-      setDial(parsed.baseYear);
-      renderCalendar();
-      ensureHolidayData(false);
-
-      showStatus(`已成功解析「${sheetName}」工作表，年度換算為西元 ${parsed.baseYear} 年。`, 'ok');
-      resultsEl.classList.add('show');
+      if(isDat){
+        const parsed = parseDat(evt.target.result);
+        const m = parsed.meta;
+        const notes = [];
+        if(m.otherType) notes.push(`略過類型 2／3 共 ${m.otherType} 筆`);
+        if(m.otherYear) notes.push(`略過其他年度 ${m.otherYear} 筆`);
+        if(m.bad)       notes.push(`忽略格式不符的行 ${m.bad} 行`);
+        applyParsed(parsed,
+          `已成功解析 DAT 檔（類型 1：低壓續日，${m.count} 筆），年度換算為西元 ${parsed.baseYear} 年。` +
+          (notes.length ? '（' + notes.join('；') + '）' : ''));
+      }else{
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type:'array', codepage: 950, cellText:false, cellDates:false });
+        const sheetName = wb.SheetNames[0];
+        const parsed = parseWorkbook(wb.Sheets[sheetName]);
+        applyParsed(parsed, `已成功解析「${sheetName}」工作表，年度換算為西元 ${parsed.baseYear} 年。`);
+      }
     }catch(err){
       console.error(err);
       showStatus('解析失敗：' + err.message, 'err');
     }
   };
   reader.onerror = () => showStatus('讀取檔案時發生錯誤，請重試。', 'err');
-  reader.readAsArrayBuffer(file);
+  if(isDat) reader.readAsText(file, 'utf-8'); else reader.readAsArrayBuffer(file);
 }
 
 fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
